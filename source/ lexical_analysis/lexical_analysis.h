@@ -4,11 +4,16 @@
 typedef double elem_t;
 
 
+//! @brief maximum length of word
+const unsigned MAX_WORD_LEN = 128;
+
+
 //! @brief struct of our code
 typedef struct
 {
     char*     text_buff;
     unsigned  text_len;
+    unsigned  position;
     
     unsigned  token_cnt;
     token_t** token_buff;
@@ -37,7 +42,7 @@ enum token_type
 //! @brief struct of lexical token
 typedef struct
 {
-    char*      token_str;
+    char*      word;
     token_type type;
     elem_t     value;
     
