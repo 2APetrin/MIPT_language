@@ -1,0 +1,74 @@
+born
+enter_mipt
+    whisper_to_the_professor Hello World! in_the_ear.
+
+get_sent_down
+die
+
+
+born
+enter_mipt
+    x podgon_pod 10.
+
+    when x is_udos
+    enter_mipt
+        whisper_to_the_professor kok in_the_ear.
+        x podgon_pod 0.
+    get_sent_down
+
+    when_nepravilno
+    enter_mipt
+        whisper_to_the_professor kyk buttowsky in_the_ear.
+        x podgon_pod 1.
+    get_sent_down
+
+get_sent_down
+die
+
+
+born
+enter_mipt
+    x podgon_pod 5.
+
+    pereeb x nulevok_untill_they_run_out
+    enter_mipt
+        whisper_to_the_professor dai udos tvar in_the_ear.
+        solve_nulevka x.
+    get_sent_down
+
+    y podgon_pod 1.
+    when x mark_is_higher_than y mark solve_nulevka x. 
+
+get_sent_down
+die
+    
+
+skill_to drink_beer
+enter_mipt
+    whisper_to_the_professor ya v funktscii in_the_ear.
+    hand_in 1 + 2 zadach.
+get_sent_down
+
+born
+enter_mipt
+    read_in_metoditchka_about x.
+    num pereebat_odin_v_odin x.
+
+    pereeb num nulevok_untill_they_run_out
+    enter_mipt
+        skip_nulevka  x.
+        solve_nulevka num.
+    get_sent_down
+
+    number podgon_pod drink_beer.
+
+    when x mark_is_higher_than 0 mark 
+        show x to_the_professor.
+    
+    when_nepravilno
+        show number to_the_professor.
+
+get_sent_down
+die
+
+
