@@ -8,6 +8,7 @@ die
 
 born
 enter_mipt
+    invent x 0.
     x podgon_pod 10.
 
     when x is_udos
@@ -28,6 +29,7 @@ die
 
 born
 enter_mipt
+    invent x 0.
     x podgon_pod 5.
 
     pereeb x nulevok_untill_they_run_out
@@ -36,6 +38,7 @@ enter_mipt
         solve_nulevka x.
     get_sent_down
 
+    invent y 0.
     y podgon_pod 1.
     when x mark_is_higher_than y mark solve_nulevka x. 
 
@@ -64,7 +67,7 @@ enter_mipt
 
     when x mark_is_higher_than 0 mark 
         show x to_the_professor.
-    
+
     when_nepravilno
         show number to_the_professor.
 

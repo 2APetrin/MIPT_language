@@ -1,0 +1,12 @@
+digraph
+{
+    node_0x606000000080[shape = Mrecord, label = "{{0x606000000080} | {born} | {start} | {line 1} | {pos 1}}", style = "filled", fillcolor = "#F0FFFF    "];
+    node_0x6060000000e0[shape = Mrecord, label = "{{0x6060000000e0} | {enter_mipt} | {begin} | {line 2} | {pos 1}}", style = "filled", fillcolor = "#F0FFFF    "];
+    node_0x606000000140[shape = Mrecord, label = "{{0x606000000140} | {whisper_to_the_professor} | {print} | {line 3} | {pos 5}}", style = "filled", fillcolor = "#F0FFFF    "];
+    node_0x6060000001a0[shape = Mrecord, label = "{{0x6060000001a0} | {Hello} | {var} | {line 3} | {pos 30}}", style = "filled", fillcolor = "#F0FFFF    "];
+    node_0x606000000200[shape = Mrecord, label = "{{0x606000000200} | {World!} | {var} | {line 3} | {pos 36}}", style = "filled", fillcolor = "#F0FFFF    "];
+    node_0x606000000260[shape = Mrecord, label = "{{0x606000000260} | {in_the_ear} | {print brcket} | {line 3} | {pos 43}}", style = "filled", fillcolor = "#F0FFFF    "];
+    node_0x6060000002c0[shape = Mrecord, label = "{{0x6060000002c0} | {.} | {dot} | {line 3} | {pos 53}}", style = "filled", fillcolor = "#F0FFFF    "];
+    node_0x606000000320[shape = Mrecord, label = "{{0x606000000320} | {get_sent_down} | {end} | {line 5} | {pos 1}}", style = "filled", fillcolor = "#F0FFFF    "];
+    node_0x606000000380[shape = Mrecord, label = "{{0x606000000380} | {die} | {finish} | {line 6} | {pos 1}}", style = "filled", fillcolor = "#F0FFFF    "];
+}

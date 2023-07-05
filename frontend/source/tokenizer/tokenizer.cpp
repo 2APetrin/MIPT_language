@@ -1,20 +1,7 @@
 #include "tokenizer.h"
-#include "../file_work/file_work.h"
+#include "../../../file_work/file_work.h"
 
 FILE* code_file = nullptr;
-
-// ========================== DSL ==========================
-
-#define TEXT_LINES text->code_buff.text_lines // pointers to first elements of lines
-#define TEXT_BUFF  text->code_buff.text_buff
-#define TEXT_LEN   text->code_buff.text_len   // number of symbols in text without 0 in the end
-#define WORDS_CNT  text->code_buff.words_cnt
-#define LINES_CNT  text->code_buff.lines_cnt
-#define POS        text->position
-#define TOKEN_BUFF text->token_buff
-#define VAR_BUFF   text->var_buff
-
-// =========================================================
 
 
 int text_ctor(const char* codefile_name, text_t* text)
@@ -57,9 +44,14 @@ int text_ctor(const char* codefile_name, text_t* text)
     TOKEN_BUFF = (token_t**) calloc(WORDS_CNT, sizeof(token_t*));
     if (!TOKEN_BUFF) return 1;
 
-    get_tokens(text);
+    if (get_tokens(text))
+    {
+        // dtor
+        printf("Error in assembly\nnothing happened\n");
+        return 1;
+    }
 
-    for (unsigned i = 0; i < WORDS_CNT; i++) printf("%s\nline - %u\npos - %u\n\n", TOKEN_BUFF[i]->word, TOKEN_BUFF[i]->line, TOKEN_BUFF[i]->pos);
+    //for (unsigned i = 0; i < WORDS_CNT; i++) printf("%s\nline - %u\npos - %u\n\n", TOKEN_BUFF[i]->word, TOKEN_BUFF[i]->line, TOKEN_BUFF[i]->pos);
 
     return 0;
 }
@@ -74,7 +66,7 @@ int get_tokens(text_t* text)
 
     for (unsigned int i = 0; i < LINES_CNT; i++)
     {
-        tokenize_line(text, i);
+        if (tokenize_line(text, i)) return 1;
     }
     return 0;
 }
@@ -91,7 +83,7 @@ int tokenize_line(text_t* text, unsigned int i)
     while (*(TEXT_LINES[i] + POS) != 0)
     {
         skip_blanks(text, i);
-        get_word(text, i);
+        if (get_word(text, i)) return 1;
     }
     return 0;
 }
@@ -122,7 +114,7 @@ int get_word(text_t* text, unsigned int i)
     if (len > MAX_WORD_LEN)
     {
         printf("word is too long in line %u, pos %u\n", i, initial_pos);
-        return 0;
+        return 1;
     }
 
 
@@ -131,7 +123,7 @@ int get_word(text_t* text, unsigned int i)
         //printf("word number - %u\n", word_number);
         TOKEN_BUFF[word_number]       = (token_t*) calloc(1, sizeof(token_t));
         TOKEN_BUFF[word_number]->word = (char*) calloc(MAX_WORD_LEN+1, sizeof(char));
-        TOKEN_BUFF[word_number]->line = i;
+        TOKEN_BUFF[word_number]->line = i+1;
         TOKEN_BUFF[word_number]->pos  = initial_pos+1;
         TOKEN_BUFF[word_number]->word = strncpy(TOKEN_BUFF[word_number]->word, (TEXT_LINES[i] + initial_pos), len);
         word_number++;
@@ -148,7 +140,7 @@ int get_word(text_t* text, unsigned int i)
 
         TOKEN_BUFF[word_number]       = (token_t*) calloc(1, sizeof(token_t));
         TOKEN_BUFF[word_number]->word = (char*) calloc(MAX_WORD_LEN+1, sizeof(char));
-        TOKEN_BUFF[word_number]->line = i;
+        TOKEN_BUFF[word_number]->line = i+1;
         TOKEN_BUFF[word_number]->pos  = initial_pos+1;
         TOKEN_BUFF[word_number]->word = strncpy(TOKEN_BUFF[word_number]->word, (TEXT_LINES[i] + initial_pos), len);
         word_number++;

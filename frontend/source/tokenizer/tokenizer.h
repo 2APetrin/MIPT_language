@@ -5,6 +5,8 @@
 #include <ctype.h>
 #include <string.h>
 
+#include "../tree/tree.h"
+
 #define ASSERT(cond)                                                     \
     if (!(cond))                                                          \
     {                                                                      \
@@ -12,6 +14,20 @@
                 #cond, __LINE__, __PRETTY_FUNCTION__, __FILE__),             \
         abort();                                                              \
     }
+
+
+// ========================== DSL ==========================
+
+#define TEXT_LINES text->code_buff.text_lines // pointers to first elements of lines
+#define TEXT_BUFF  text->code_buff.text_buff
+#define TEXT_LEN   text->code_buff.text_len   // number of symbols in text without 0 in the end
+#define WORDS_CNT  text->code_buff.words_cnt
+#define LINES_CNT  text->code_buff.lines_cnt
+#define POS        text->position
+#define TOKEN_BUFF text->token_buff
+#define VAR_BUFF   text->var_buff
+
+// =========================================================
 
 
 //! @brief extern code file
@@ -32,22 +48,6 @@ typedef struct
     char*  name;
     elem_t value;
 } var_t;
-
-
-//! @brief types of lexical tokens
-enum token_type
-{
-    NUM     = 1,
-    VAR     = 2,
-    OP      = 3,
-    FUNC    = 4,
-    STRING  = 5,
-    O_BRCKT = 6,
-    C_BRCKT = 7,
-    START   = 8,
-    FINISH  = 9,
-    OTHER   = 10
-};
 
 
 //! @brief struct of lexical token
@@ -71,6 +71,7 @@ typedef struct
 {
     char**   text_lines;
     char*    text_buff;
+
     unsigned lines_cnt;
     unsigned words_cnt;
     unsigned text_len;

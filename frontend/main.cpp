@@ -1,4 +1,5 @@
-#include "tokenizer.h"
+#include "source/tokenizer/tokenizer.h"
+#include "source/main_frontend/frontend.h"
 
 int main(int argc, char** argv)
 {
@@ -9,7 +10,12 @@ int main(int argc, char** argv)
     }
 
     text_t text = {0};
-    text_ctor(argv[1], &text);
+    if (text_ctor(argv[1], &text)) return 1;
+
+    create_tree_of_tokens(&text);
+
+    for (unsigned i = 0; i < text.code_buff.words_cnt; i++)
+    printf("%s\nline - %u\npos - %u\ntype - %d\n\n",text.token_buff[i]->word ,text.token_buff[i]->line, text.token_buff[i]->pos, text.token_buff[i]->type);
 
     text_dtor(&text);
     return 0;
