@@ -1,6 +1,7 @@
 born
 enter_mipt
-    whisper_to_the_professor Hello World! in_the_ear.
+    whisper_to_the_professor 10 in_the_ear.
+    whisper_to_the_professor 11 in_the_ear.
 
 get_sent_down
 die

@@ -2,9 +2,10 @@
 
 #include "../tokenizer/tokenizer.h"
 #include "../tree/tree.h"
+#include "../get/get.h"
 
 //! @brief creates a tree of our token-nodes
-int create_tree_of_tokens(text_t* text);
+token_t* create_tree_of_tokens(text_t* text);
 
 
 //! @brief initializes tokens

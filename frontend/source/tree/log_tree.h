@@ -42,3 +42,16 @@ int graphviz_add_node(token_t * node);
 //! @brief creates png from dot file
 //!
 int print_dump(void);
+
+
+int node_print(token_t* node);
+int node_link(token_t * node);
+int link_nodes(token_t * node1, token_t * node2);
+
+
+//! @brief makes and prints tree_dump
+int tree_print_dump(token_t * root);
+
+
+//! @brief gets color of node from its type
+unsigned get_node_color_from_type(token_type type);

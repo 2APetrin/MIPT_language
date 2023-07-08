@@ -14,9 +14,6 @@ int main(int argc, char** argv)
 
     create_tree_of_tokens(&text);
 
-    for (unsigned i = 0; i < text.code_buff.words_cnt; i++)
-    printf("%s\nline - %u\npos - %u\ntype - %d\n\n",text.token_buff[i]->word ,text.token_buff[i]->line, text.token_buff[i]->pos, text.token_buff[i]->type);
-
     text_dtor(&text);
     return 0;
 }

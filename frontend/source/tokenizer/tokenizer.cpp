@@ -1,5 +1,6 @@
 #include "tokenizer.h"
 #include "../../../file_work/file_work.h"
+#include "../tree/tree.h"
 
 FILE* code_file = nullptr;
 
@@ -31,7 +32,7 @@ int text_ctor(const char* codefile_name, text_t* text)
     TEXT_BUFF[TEXT_LEN] = '\0';
 
     get_num_of_lines(text);   // puts 0 instead of \n
-    printf("num of lines %u\n", LINES_CNT);
+    //printf("num of lines %u\n", LINES_CNT);
 
     TEXT_LINES = (char**) calloc(LINES_CNT, sizeof(char*));
     if (!TEXT_LINES) return 1;
@@ -40,7 +41,7 @@ int text_ctor(const char* codefile_name, text_t* text)
     //for (unsigned i = 0; i < LINES_CNT; i++) printf("%s\n", TEXT_LINES[i]);   // debug print
 
     get_num_of_words(text);
-    printf("num of words %u\n\n", WORDS_CNT);
+    //printf("num of words %u\n\n", WORDS_CNT);
     TOKEN_BUFF = (token_t**) calloc(WORDS_CNT, sizeof(token_t*));
     if (!TOKEN_BUFF) return 1;
 
@@ -50,6 +51,8 @@ int text_ctor(const char* codefile_name, text_t* text)
         printf("Error in assembly\nnothing happened\n");
         return 1;
     }
+
+    VAR_BUFF = (var_t**) calloc(MAX_VAR_COUNT, sizeof(var_t*));
 
     //for (unsigned i = 0; i < WORDS_CNT; i++) printf("%s\nline - %u\npos - %u\n\n", TOKEN_BUFF[i]->word, TOKEN_BUFF[i]->line, TOKEN_BUFF[i]->pos);
 
@@ -126,6 +129,10 @@ int get_word(text_t* text, unsigned int i)
         TOKEN_BUFF[word_number]->line = i+1;
         TOKEN_BUFF[word_number]->pos  = initial_pos+1;
         TOKEN_BUFF[word_number]->word = strncpy(TOKEN_BUFF[word_number]->word, (TEXT_LINES[i] + initial_pos), len);
+
+        TOKEN_BUFF[word_number]->left_child = nullptr;
+        TOKEN_BUFF[word_number]->right_child = nullptr;
+
         word_number++;
     }
 
@@ -143,6 +150,10 @@ int get_word(text_t* text, unsigned int i)
         TOKEN_BUFF[word_number]->line = i+1;
         TOKEN_BUFF[word_number]->pos  = initial_pos+1;
         TOKEN_BUFF[word_number]->word = strncpy(TOKEN_BUFF[word_number]->word, (TEXT_LINES[i] + initial_pos), len);
+
+        TOKEN_BUFF[word_number]->left_child = nullptr;
+        TOKEN_BUFF[word_number]->right_child = nullptr;
+
         word_number++;
     }
     return 0;
@@ -217,9 +228,15 @@ int text_dtor(text_t* text)
 {
     ASSERT(text);
 
+    tree_free(text->tree_root);
+
     free(TEXT_BUFF);
     free(TEXT_LINES);
     free(TOKEN_BUFF);
+    free(VAR_BUFF);
+
+    printf("Text struct + tree are destructed\n");
+
     return 0;
 }
 

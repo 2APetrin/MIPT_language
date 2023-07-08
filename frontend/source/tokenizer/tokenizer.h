@@ -5,7 +5,7 @@
 #include <ctype.h>
 #include <string.h>
 
-#include "../tree/tree.h"
+//#include "../tree/tree.h"
 
 #define ASSERT(cond)                                                     \
     if (!(cond))                                                          \
@@ -13,6 +13,13 @@
         printf("\nError in %s in line %d in function %s in file %s\n\n",    \
                 #cond, __LINE__, __PRETTY_FUNCTION__, __FILE__),             \
         abort();                                                              \
+    }
+
+#define FREE()                    \
+    {                              \
+    POS++;                          \
+    free(TOKEN_BUFF[POS-1]->word);   \
+    free(TOKEN_BUFF[POS-1]);          \
     }
 
 
@@ -23,6 +30,7 @@
 #define TEXT_LEN   text->code_buff.text_len   // number of symbols in text without 0 in the end
 #define WORDS_CNT  text->code_buff.words_cnt
 #define LINES_CNT  text->code_buff.lines_cnt
+#define VAR_CNT    text->var_cnt
 #define POS        text->position
 #define TOKEN_BUFF text->token_buff
 #define VAR_BUFF   text->var_buff
@@ -39,7 +47,15 @@ typedef double elem_t;
 
 
 //! @brief maximum length of word
-const unsigned MAX_WORD_LEN = 128;
+const unsigned MAX_WORD_LEN  = 128;
+
+
+//! @brief maximum variables count
+const unsigned MAX_VAR_COUNT = 128;
+
+
+//! @brief universal const for poison
+const unsigned POISON = 0xDEADBEEF;
 
 
 //! @brief structure of variable
@@ -50,6 +66,46 @@ typedef struct
 } var_t;
 
 
+//! @brief types of lexical tokens
+enum token_type
+{
+    TYPE_NUM = 1,
+
+    OP_ADD   = 2,
+    OP_SUB   = 3,
+    OP_MUL   = 4,
+    OP_DIV   = 5,
+
+    TYPE_VAR   = 6,
+    TYPE_FUNC  = 7,
+
+    TYPE_PRINT = 8,
+
+    TYPE_START        = 9,
+    TYPE_FINISH       = 10,
+    TYPE_O_BRCKT      = 11,
+    TYPE_C_BRCKT      = 12,
+    TYPE_DOT          = 13,
+    TYPE_PRINT_BRCKET = 14,
+    TYPE_STRING       = 15,
+
+    TYPE_VAR_INIT     = 16,
+    TYPE_ASSIGNMENT   = 17,
+    TYPE_IF           = 18,
+    TYPE_ELSE         = 19,
+    TYPE_IF_BRCKET    = 20,
+
+    TYPE_EQ           = 21,
+    TYPE_GREATER      = 22,
+    TYPE_GREATER_EQ   = 23,
+    TYPE_LESS         = 24,
+    TYPE_LESS_EQ      = 25,
+
+    TYPE_EXPR_O_BR    = 26,
+    TYPE_EXPR_C_BR    = 27
+};
+
+
 //! @brief struct of lexical token
 typedef struct token
 {
@@ -58,8 +114,8 @@ typedef struct token
     elem_t     value;
 
     token*     parent;
-    token*     prev;
-    token*     next;
+    token*     left_child;
+    token*     right_child;
 
     unsigned   line;
     unsigned   pos;
