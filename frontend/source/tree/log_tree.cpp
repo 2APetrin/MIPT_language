@@ -149,6 +149,7 @@ unsigned get_node_color_from_type(token_type type)
     if ((type >= OP_ADD) && (type <= OP_DIV))        return 0xE6A8D7;
     if (type == TYPE_DOT) return 0xC6DF90;
     if (type == TYPE_VAR) return 0x9ACEEB;
+    if (type == TYPE_NUM) return 0xDDB9E9;
 
     return 0xF0FFFF;
 }

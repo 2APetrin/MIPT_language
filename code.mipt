@@ -1,7 +1,16 @@
 born
 enter_mipt
-    whisper_to_the_professor 10 in_the_ear.
-    whisper_to_the_professor 11 in_the_ear.
+    whisper_to_the_professor 0 in_the_ear.
+
+    when x <-> 0 togda
+    enter_mipt
+        whisper_to_the_professor 1 in_the_ear.
+    get_sent_down
+
+    when_nepravilno
+    enter_mipt
+        whisper_to_the_professor 11 + 00 + 77 * 2 in_the_ear.
+    get_sent_down
 
 get_sent_down
 die

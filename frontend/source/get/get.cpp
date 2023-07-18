@@ -123,7 +123,106 @@ token_t* get_If(text_t* text)
 {
     ASSERT(text);
 
-    return nullptr;
+    //printf("entered if\n");
+
+    token_t* ret_root    = create_node(TYPE_DOT, POISON);
+    ret_root->left_child = TOKEN_BUFF[POS];
+
+    TOKEN_BUFF[POS]->parent = ret_root;
+    token_t* curr = TOKEN_BUFF[POS];
+    POS++;
+
+    curr->left_child = get_logical_expr(text);
+    if (curr->left_child) curr->left_child->parent = curr;
+
+    if (TOKEN_BUFF[POS]->type == TYPE_IF_BRCKET) FREE()
+    else
+    {
+        printf("error in get if. Close bracket (togda) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+
+    if (TOKEN_BUFF[POS]->type == TYPE_O_BRCKT) FREE()
+    else
+    {
+        printf("error in get if. Open bracket (enter_mipt) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+
+    token_t* if_code_tree   = get_comp(text);
+    token_t* else_code_tree = nullptr;
+
+    if (TOKEN_BUFF[POS]->type == TYPE_C_BRCKT) FREE()
+    else
+    {
+        printf("error in get if. Close bracket (get_sent_down) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+
+    if (TOKEN_BUFF[POS]->type == TYPE_ELSE)
+    {
+        token_t* else_token = TOKEN_BUFF[POS];
+        POS++;
+
+        if (TOKEN_BUFF[POS]->type == TYPE_O_BRCKT) FREE()
+        else
+        {
+            printf("error in get if. Open bracket (enter_mipt) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+            return nullptr;
+        }
+
+        else_code_tree = get_comp(text);
+
+        if (TOKEN_BUFF[POS]->type == TYPE_C_BRCKT) FREE()
+        else
+        {
+            printf("error in get if. Close bracket (enter_mipt) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+            return nullptr;
+        }
+
+        curr->right_child  = else_token;
+        else_token->parent = curr;
+
+        curr->right_child->left_child  = if_code_tree;
+        if (if_code_tree) if_code_tree->parent = curr->right_child;
+
+        curr->right_child->right_child = else_code_tree;
+        if (else_code_tree) else_code_tree->parent = curr->right_child;
+
+        return ret_root;
+    }
+
+    curr->right_child = if_code_tree;
+    if (curr->right_child) curr->right_child->parent = curr;
+
+    return ret_root;
+}
+
+
+token_t* get_logical_expr(text_t* text)
+{
+    ASSERT(text);
+
+    token_t* left_part = get_expr(text);
+
+    if ((TOKEN_BUFF[POS]->type < TYPE_EQ) || (TOKEN_BUFF[POS]->type > TYPE_LESS_EQ))
+    {
+        printf("error in get logical expression. Sign is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+
+    token_t* sign = TOKEN_BUFF[POS];
+    POS++;
+
+    token_t* right_part = get_expr(text);
+
+    sign->left_child  = left_part;
+    if (left_part) left_part->parent = sign;
+
+    sign->right_child = right_part;
+    if (right_part) right_part->parent = sign;
+
+    return sign;
 }
 
 
@@ -131,8 +230,8 @@ token_t* get_print(text_t* text)
 {
     ASSERT(text);
 
-    token_t* ret_root = create_node(TYPE_DOT, POISON);
-    ret_root->left_child  = TOKEN_BUFF[POS];
+    token_t* ret_root    = create_node(TYPE_DOT, POISON);
+    ret_root->left_child = TOKEN_BUFF[POS];
 
     TOKEN_BUFF[POS]->parent = ret_root;
     POS++;
@@ -160,6 +259,9 @@ token_t* get_print(text_t* text)
 }
 
 
+// =============================== expr zone ===============================
+
+
 token_t* get_expr(text_t* text)
 {
     ASSERT(text);
@@ -167,23 +269,23 @@ token_t* get_expr(text_t* text)
     token_t* node1 = get_T(text);
     if (!node1) return nullptr;
 
+    token_t* node = nullptr;
+
     while (TOKEN_BUFF[POS]->type == OP_ADD || TOKEN_BUFF[POS]->type == OP_SUB)
     {
-        int type = TOKEN_BUFF[POS]->type;
+        node = TOKEN_BUFF[POS];
         POS++;
 
         token_t* node2 = get_T(text);
         if (!node2) return nullptr;
 
-        token_t* node3 = nullptr;
+        node->left_child  = node1;
+        node->right_child = node2;
 
-        if (type == OP_ADD) node3 = create_node(OP_ADD, POISON, node1, node2);
-        if (type == OP_SUB) node3 = create_node(OP_SUB, POISON, node1, node2);
+        node1->parent = node;
+        node2->parent = node;
 
-        node3->left_child->parent  = node3;
-        node3->right_child->parent = node3;
-
-        node1 = node3;
+        node1 = node;
     }
 
     return node1;
@@ -197,23 +299,23 @@ token_t* get_T(text_t* text)
     token_t* node1 = get_P(text);
     if (!node1) return nullptr;
 
+    token_t* node = nullptr;
+
     while (TOKEN_BUFF[POS]->type == OP_MUL || TOKEN_BUFF[POS]->type == OP_DIV)
     {
-        int type = TOKEN_BUFF[POS]->type;
+        node = TOKEN_BUFF[POS];
         POS++;
 
-        token_t* node2 = get_P(text);
+        token_t* node2 = get_T(text);
         if (!node2) return nullptr;
 
-        token_t* node3 = nullptr;
+        node->left_child  = node1;
+        node->right_child = node2;
 
-        if (type == OP_MUL) node3 = create_node(OP_MUL, POISON, node1, node2);
-        if (type == OP_DIV) node3 = create_node(OP_DIV, POISON, node1, node2);
+        node1->parent = node;
+        node2->parent = node;
 
-        node3->left_child->parent  = node3;
-        node3->right_child->parent = node3;
-
-        node1 = node3;
+        node1 = node;
     }
 
     return node1;

@@ -25,3 +25,5 @@ token_t* get_T(text_t* text);
 token_t* get_P(text_t* text);
 
 token_t* get_elem(text_t* text);
+
+token_t* get_logical_expr(text_t* text);

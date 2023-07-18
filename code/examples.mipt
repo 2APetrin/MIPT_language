@@ -11,7 +11,7 @@ enter_mipt
     invent x 0.
     x podgon_pod 10.
 
-    when x is_udos
+    when x <-> 0 togda
     enter_mipt
         whisper_to_the_professor kok in_the_ear.
         x podgon_pod 0.
