@@ -13,13 +13,13 @@ enter_mipt
 
     when x <-> 0 togda
     enter_mipt
-        whisper_to_the_professor kok in_the_ear.
+        whisper_to_the_professor 0 in_the_ear.
         x podgon_pod 0.
     get_sent_down
 
     when_nepravilno
     enter_mipt
-        whisper_to_the_professor kyk buttowsky in_the_ear.
+        whisper_to_the_professor 1 + 2 in_the_ear.
         x podgon_pod 1.
     get_sent_down
 
@@ -34,13 +34,13 @@ enter_mipt
 
     pereeb x nulevok_untill_they_run_out
     enter_mipt
-        whisper_to_the_professor dai udos tvar in_the_ear.
+        whisper_to_the_professor 42 in_the_ear.
         solve_nulevka x.
     get_sent_down
 
     invent y 0.
     y podgon_pod 1.
-    when x mark_is_higher_than y mark solve_nulevka x. 
+    when x -> y mark solve_nulevka x. 
 
 get_sent_down
 die

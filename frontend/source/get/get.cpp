@@ -2,6 +2,7 @@
 #include "../main_frontend/frontend.h"
 #include "../tree/log_tree.h"
 
+
 token_t* get_general(text_t* text)
 {
     ASSERT(text);
@@ -109,21 +110,124 @@ token_t* get_operator(text_t* text)
 {
     ASSERT(text);
 
-    switch (TOKEN_BUFF[POS]->type)
-    {
-        case TYPE_PRINT: return get_print(text);
-        case TYPE_IF:    return get_If(text);
+    token_type type = TOKEN_BUFF[POS]->type;
 
-        default:         return nullptr;
-    }
+    if (type == TYPE_IF)                           return get_If(text);
+
+    if (type == TYPE_VAR_INIT || type == TYPE_VAR) return get_variable_op(text);
+
+    if (type == TYPE_PRINT)                        return get_print(text);
+
+    return nullptr;
 }
+
+
+// ============================================================== variables zone ==============================================================
+
+
+token_t* get_variable_op(text_t* text)
+{
+    ASSERT(text);
+
+    token_type type = TOKEN_BUFF[POS]->type;
+
+    if (type == TYPE_VAR_INIT) return get_var_initialization(text);
+    if (type == TYPE_VAR)      return get_assignment(text);
+
+    return nullptr;
+}
+
+
+token_t* get_var_initialization(text_t* text)
+{
+    ASSERT(text);
+
+    if (TOKEN_BUFF[POS]->type != TYPE_VAR_INIT) return nullptr;
+
+    token_t* ret_node    = create_node(TYPE_DOT, POISON);
+    token_t* curr_node   = TOKEN_BUFF[POS];
+
+    ret_node->left_child = TOKEN_BUFF[POS];
+    curr_node->parent    = ret_node;
+    POS++;
+
+    if (TOKEN_BUFF[POS]->type != TYPE_VAR)
+    {
+        printf("error in get var initialization. Next node after var init isn't variable\n");
+        return nullptr;
+    }
+
+    curr_node->left_child = TOKEN_BUFF[POS];
+    TOKEN_BUFF[POS]->parent = curr_node;
+    curr_node = TOKEN_BUFF[POS];
+    POS++;
+
+    if (TOKEN_BUFF[POS]->type != TYPE_NUM)
+    {
+        printf("error in get var initialization. Next node after variable isn't number\n");
+        return nullptr;
+    }
+
+    TOKEN_BUFF[POS]->parent = curr_node;
+    curr_node->left_child   = TOKEN_BUFF[POS];
+    curr_node = TOKEN_BUFF[POS];
+    POS++;
+
+    if (TOKEN_BUFF[POS]->type != TYPE_DOT)
+    {
+        printf("error in var init. Dot in the end is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+    FREE();
+
+    return ret_node;
+}
+
+
+token_t* get_assignment(text_t* text)
+{
+    token_t* ret_root   = create_node(TYPE_DOT, POISON);
+    token_t* first_node = TOKEN_BUFF[POS]; 
+    POS++;
+
+    if (TOKEN_BUFF[POS]->type != TYPE_ASSIGNMENT)
+    {
+        printf("error in assignment. podgon_pod is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+
+    token_t* middle_part    = TOKEN_BUFF[POS];
+    middle_part->left_child = first_node;
+    first_node->parent      = middle_part;
+    ret_root->left_child    = middle_part;
+    middle_part->parent     = ret_root;
+    POS++;
+
+    token_t* right_part = get_expr(text);
+
+    middle_part->right_child = right_part;
+    if (right_part) right_part->parent = middle_part;
+
+    if (TOKEN_BUFF[POS]->type != TYPE_DOT)
+    {
+        printf("error in var assignment. Dot in the end is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+    FREE();
+
+    return ret_root;
+}
+
+
+
+// ============================================================== if zone ==============================================================
 
 
 token_t* get_If(text_t* text)
 {
     ASSERT(text);
 
-    //printf("entered if\n");
+    if (TOKEN_BUFF[POS]->type != TYPE_IF) return nullptr;
 
     token_t* ret_root    = create_node(TYPE_DOT, POISON);
     ret_root->left_child = TOKEN_BUFF[POS];
@@ -226,40 +330,7 @@ token_t* get_logical_expr(text_t* text)
 }
 
 
-token_t* get_print(text_t* text)
-{
-    ASSERT(text);
-
-    token_t* ret_root    = create_node(TYPE_DOT, POISON);
-    ret_root->left_child = TOKEN_BUFF[POS];
-
-    TOKEN_BUFF[POS]->parent = ret_root;
-    POS++;
-
-    token_t* node = get_expr(text);
-    ret_root->left_child->left_child = node;
-
-    if (node) node->parent = ret_root->left_child;
-
-    if (TOKEN_BUFF[POS]->type != TYPE_PRINT_BRCKET)
-    {
-        printf("error in print. Print bracket is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
-    FREE();
-
-    if (TOKEN_BUFF[POS]->type != TYPE_DOT)
-    {
-        printf("error in print. Dot in the end is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
-    FREE();
-
-    return ret_root;
-}
-
-
-// =============================== expr zone ===============================
+// ============================================================== expr zone ==============================================================
 
 
 token_t* get_expr(text_t* text)
@@ -358,4 +429,42 @@ token_t* get_elem(text_t* text)
 
     printf("Error in get expression: expected num or var\nFound - %s\nline - %u\npos - %u\n.", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
     return nullptr;
+}
+
+
+// ============================================================== func zone ==============================================================
+
+
+token_t* get_print(text_t* text)
+{
+    ASSERT(text);
+
+    if (TOKEN_BUFF[POS]->type != TYPE_PRINT) return nullptr;
+
+    token_t* ret_root    = create_node(TYPE_DOT, POISON);
+    ret_root->left_child = TOKEN_BUFF[POS];
+
+    TOKEN_BUFF[POS]->parent = ret_root;
+    POS++;
+
+    token_t* node = get_expr(text);
+    ret_root->left_child->left_child = node;
+
+    if (node) node->parent = ret_root->left_child;
+
+    if (TOKEN_BUFF[POS]->type != TYPE_PRINT_BRCKET)
+    {
+        printf("error in print. Print bracket is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+    FREE();
+
+    if (TOKEN_BUFF[POS]->type != TYPE_DOT)
+    {
+        printf("error in print. Dot in the end is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+    FREE();
+
+    return ret_root;
 }

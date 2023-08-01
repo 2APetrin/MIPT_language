@@ -1,15 +1,18 @@
 born
 enter_mipt
-    whisper_to_the_professor 0 in_the_ear.
+    invent x 0.
+    x podgon_pod 10.
 
     when x <-> 0 togda
     enter_mipt
-        whisper_to_the_professor 1 in_the_ear.
+        whisper_to_the_professor 0 in_the_ear.
+        x podgon_pod 0.
     get_sent_down
 
     when_nepravilno
     enter_mipt
-        whisper_to_the_professor 11 + 00 + 77 * 2 in_the_ear.
+        whisper_to_the_professor 1 + 2 in_the_ear.
+        x podgon_pod 1.
     get_sent_down
 
 get_sent_down

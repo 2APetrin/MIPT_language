@@ -27,3 +27,9 @@ token_t* get_P(text_t* text);
 token_t* get_elem(text_t* text);
 
 token_t* get_logical_expr(text_t* text);
+
+token_t* get_variable_op(text_t* text);
+
+token_t* get_var_initialization(text_t* text);
+
+token_t* get_assignment(text_t* text);
