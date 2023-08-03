@@ -76,10 +76,10 @@ enum token_type
     OP_MUL   = 4,
     OP_DIV   = 5,
 
-    TYPE_VAR   = 6,
-    TYPE_FUNC  = 7,
+    TYPE_VAR        = 6,
+    TYPE_FUNC_INIT  = 7,
 
-    TYPE_PRINT = 8,
+    TYPE_PRINT      = 8,
 
     TYPE_START        = 9,
     TYPE_FINISH       = 10,
@@ -102,7 +102,16 @@ enum token_type
     TYPE_LESS_EQ      = 25,
 
     TYPE_EXPR_O_BR    = 26,
-    TYPE_EXPR_C_BR    = 27
+    TYPE_EXPR_C_BR    = 27,
+
+    TYPE_LOOP_FIRST   = 28,
+    TYPE_LOOP_CLOSE   = 29,
+
+    TYPE_DECREASE     = 30,
+    TYPE_FUNC_ID      = 31,
+
+    TYPE_RETURN       = 32,
+    TYPE_RETURN_BRCKT = 33
 };
 
 
@@ -184,3 +193,4 @@ int tokenize_line(text_t* text, unsigned int i);
 
 //! @brief gets word from line
 int get_word(text_t* text, unsigned int i);
+

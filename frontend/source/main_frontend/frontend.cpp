@@ -11,6 +11,8 @@ token_t* create_tree_of_tokens(text_t* text)
 
     text->tree_root = get_general(text);
 
+    tree_print_dump(text->tree_root);
+
     printf("Tree is constructed\n");
 
     return 0;
@@ -70,10 +72,19 @@ token_type get_tok_type(const char* word)
     if (!strcmp(word, "<"))               return TYPE_LESS;
     if (!strcmp(word, "<-"))              return TYPE_LESS_EQ;
 
-    if (!strcmp(word, "("))              return TYPE_EXPR_O_BR;
-    if (!strcmp(word, ")"))              return TYPE_EXPR_C_BR;
+    if (!strcmp(word, "("))               return TYPE_EXPR_O_BR;
+    if (!strcmp(word, ")"))               return TYPE_EXPR_C_BR;
 
-    if (!strcmp(word, "whisper_to_the_professor")) return TYPE_PRINT;
+    if (!strcmp(word, "pereeb"))          return TYPE_LOOP_FIRST;
+    if (!strcmp(word, "solve_nulevka"))   return TYPE_DECREASE;
+    if (!strcmp(word, "skill_to"))        return TYPE_FUNC_INIT;
+
+    if (!strcmp(word, "hand_in"))         return TYPE_RETURN;
+    if (!strcmp(word, "zadach"))          return TYPE_RETURN_BRCKT;
+
+    if (!strcmp(word, "nulevok_untill_they_run_out")) return TYPE_LOOP_CLOSE;
+
+    if (!strcmp(word, "whisper_to_the_professor"))    return TYPE_PRINT;
 
     return TYPE_VAR;
 }
@@ -90,7 +101,6 @@ const char* get_typename_from_toktype(token_type type_num)
         case OP_DIV:       return "/";
 
         case TYPE_VAR:     return "var";
-        case TYPE_FUNC:    return "func";
 
         case TYPE_PRINT:   return "print";
         case TYPE_START:   return "start";
@@ -101,6 +111,7 @@ const char* get_typename_from_toktype(token_type type_num)
 
         case TYPE_DOT:     return "and";
 
+        case TYPE_FUNC_INIT:    return "func_init";
         case TYPE_VAR_INIT:     return "var init";
         case TYPE_PRINT_BRCKET: return "print brcket";
         case TYPE_ASSIGNMENT:   return "=";
@@ -116,6 +127,15 @@ const char* get_typename_from_toktype(token_type type_num)
 
         case TYPE_EXPR_O_BR:    return "(";
         case TYPE_EXPR_C_BR:    return ")";
+
+        case TYPE_LOOP_FIRST:   return "while";
+        case TYPE_LOOP_CLOSE:   return "while_close_br";
+
+        case TYPE_DECREASE:     return "--";
+        case TYPE_FUNC_ID:      return "func id";
+
+        case TYPE_RETURN:       return "return";
+        case TYPE_RETURN_BRCKT: return "ret bracket";
 
         default: return nullptr;
     }
@@ -134,4 +154,46 @@ int number_check(const char* word)
     }
 
     return 1;
+}
+
+
+int write_tree_preorder(text_t* text)
+{
+    ASSERT(text);
+
+    // закончил тут. Написать открытие файла и запись в него дерева
+
+    write_subtree_preorder(text->tree_root, stream);
+}
+
+int print_pre_order(node_t * node, FILE * out_stream)
+{
+    fprintf(out_stream, "(");
+
+    if (!node->type)
+        fprintf(out_stream, "%lg", node->value);
+    
+    else if (node->type != TYPE_VAR)
+    {
+        fprintf(out_stream, "%s", get_type(node->type));
+    }
+
+    else
+    {
+        fprintf(out_stream, "%c", (int)node->value);
+    }
+
+    if (node->left_child != nullptr)
+    {
+        print_pre_order(node->left_child, out_stream);
+    }
+
+    if (node->right_child != nullptr)
+    {
+        print_pre_order(node->right_child, out_stream);
+    }
+
+    fprintf(out_stream, ")");
+
+    return 0;
 }

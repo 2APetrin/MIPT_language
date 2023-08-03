@@ -239,5 +239,3 @@ int text_dtor(text_t* text)
 
     return 0;
 }
-
-

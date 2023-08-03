@@ -14,6 +14,8 @@ int main(int argc, char** argv)
 
     create_tree_of_tokens(&text);
 
+    write_tree_preorder(&text);
+
     text_dtor(&text);
     return 0;
 }

@@ -33,3 +33,9 @@ token_t* get_variable_op(text_t* text);
 token_t* get_var_initialization(text_t* text);
 
 token_t* get_assignment(text_t* text);
+
+token_t* get_loop(text_t* text);
+
+token_t* get_decrease(text_t* text);
+
+token_t* get_return(text_t* text);

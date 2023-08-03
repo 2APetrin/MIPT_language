@@ -22,3 +22,10 @@ int number_check(const char* word);
 
 //! @brief gets type name from type number
 const char* get_typename_from_toktype(token_type type_num);
+
+
+//! @brief writes tree in preorder to transfer it to the middle end part
+int write_tree_preorder(text_t* text);
+
+
+int write_subtree_preorder(token_t* node, FILE* stream);

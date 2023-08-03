@@ -1,6 +1,6 @@
 born
 enter_mipt
-    whisper_to_the_professor Hello World! in_the_ear.
+    whisper_to_the_professor 0 in_the_ear.
 
 get_sent_down
 die
@@ -40,36 +40,40 @@ enter_mipt
 
     invent y 0.
     y podgon_pod 1.
-    when x -> y mark solve_nulevka x. 
+
+    when x -> y togda
+    enter_mipt
+        solve_nulevka x.
+    get_sent_down
 
 get_sent_down
 die
 
 
-skill_to drink_beer
+skill_to drink_beer ( num )
 enter_mipt
-    whisper_to_the_professor ya v funktscii in_the_ear.
-    hand_in 1 + 2 zadach.
+    whisper_to_the_professor num in_the_ear.
+    hand_in 0 zadach.
 get_sent_down
 
 born
 enter_mipt
-    read_in_metoditchka_about x.
-    num pereebat_odin_v_odin x.
+    invent num 3.
+    invent x 1.
 
     pereeb num nulevok_untill_they_run_out
     enter_mipt
-        skip_nulevka  x.
         solve_nulevka num.
+        whisper_to_the_professor 1 in_the_ear.
     get_sent_down
 
-    number podgon_pod drink_beer.
+    drink_beer ( 1 ).
 
-    when x mark_is_higher_than 0 mark 
-        show x to_the_professor.
+    when x -> 0 togda
+        whisper_to_the_professor 456 in_the_ear.
 
     when_nepravilno
-        show number to_the_professor.
+        whisper_to_the_professor 123 in_the_ear.
 
 get_sent_down
 die
