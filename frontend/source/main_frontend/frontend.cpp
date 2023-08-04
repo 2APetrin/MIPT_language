@@ -1,6 +1,7 @@
 #include "frontend.h"
 #include "../tree/tree.h"
 #include "../tree/log_tree.h"
+#include "../../../file_work/file_work.h"
 
 
 token_t* create_tree_of_tokens(text_t* text)
@@ -161,39 +162,38 @@ int write_tree_preorder(text_t* text)
 {
     ASSERT(text);
 
-    // закончил тут. Написать открытие файла и запись в него дерева
+    FILE* stream = nullptr;
+    open_write_file("temp/ast_tree.ast", &stream);
 
     write_subtree_preorder(text->tree_root, stream);
+
+    return 0;
 }
 
-int print_pre_order(node_t * node, FILE * out_stream)
+
+int write_subtree_preorder(token_t* node, FILE* stream)
 {
-    fprintf(out_stream, "(");
+    if (!node) return 0;
 
-    if (!node->type)
-        fprintf(out_stream, "%lg", node->value);
-    
-    else if (node->type != TYPE_VAR)
+    unsigned type = node->type;
+    switch(type)
     {
-        fprintf(out_stream, "%s", get_type(node->type));
+        case TYPE_NUM: fprintf(stream, "(%d:%s", node->type, node->word);
+            break;
+
+        case TYPE_VAR:
+        case TYPE_FUNC_ID:
+            fprintf(stream, "(%d:%s", node->type, node->word);
+            break;
+
+        default: fprintf(stream, "(%d", node->type);
+            break;
     }
 
-    else
-    {
-        fprintf(out_stream, "%c", (int)node->value);
-    }
+    write_subtree_preorder(node->left_child,  stream);
+    write_subtree_preorder(node->right_child, stream);
 
-    if (node->left_child != nullptr)
-    {
-        print_pre_order(node->left_child, out_stream);
-    }
-
-    if (node->right_child != nullptr)
-    {
-        print_pre_order(node->right_child, out_stream);
-    }
-
-    fprintf(out_stream, ")");
+    fprintf(stream, ")");
 
     return 0;
 }

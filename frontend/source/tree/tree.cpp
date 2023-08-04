@@ -39,7 +39,18 @@ token_t* create_node(token_type type, elem_t value, token_t* l_node, token_t* r_
         return new_node;
     }
 
-    return nullptr;
+    new_node->type        = type;
+    new_node->left_child  = l_node;
+    new_node->right_child = r_node;
+
+    new_node->parent      = nullptr;
+    new_node->word        = nullptr;
+
+    new_node->pos         = POISON;
+    new_node->line        = POISON;
+    new_node->value       = value;
+
+    return new_node;
 }
 
 

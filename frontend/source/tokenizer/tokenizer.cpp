@@ -19,7 +19,7 @@ int text_ctor(const char* codefile_name, text_t* text)
     text->var_cnt   = 0;
     POS             = 0;
 
-    if (open_code_file(codefile_name, &code_file)) return 1;
+    if (open_read_file(codefile_name, &code_file)) return 1;
 
     fseek(code_file, 0L, SEEK_END);
     TEXT_LEN = (unsigned) ftell(code_file);

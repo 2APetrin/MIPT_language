@@ -8,6 +8,10 @@
 token_t* create_tree_of_tokens(text_t* text);
 
 
+//! @brief extern log file
+extern FILE* log_file;
+
+
 //! @brief initializes tokens
 int init_tokens(token_t** tok_buff, unsigned int tok_count);
 
@@ -28,4 +32,5 @@ const char* get_typename_from_toktype(token_type type_num);
 int write_tree_preorder(text_t* text);
 
 
+//! @brief writes node and what is below
 int write_subtree_preorder(token_t* node, FILE* stream);

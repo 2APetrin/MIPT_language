@@ -45,13 +45,24 @@ int print_dump(void);
 
 
 int node_print(token_t* node);
-int node_link(token_t * node);
-int link_nodes(token_t * node1, token_t * node2);
+int node_link(token_t* node);
+int link_nodes(token_t* node1, token_t* node2);
 
 
 //! @brief makes and prints tree_dump
-int tree_print_dump(token_t * root);
+int tree_print_dump(token_t* root);
 
 
 //! @brief gets color of node from its type
 unsigned get_node_color_from_type(token_type type);
+
+
+//! @brief
+int ast_tree_print_dump(token_t* root);
+
+
+//! @brief prints ast nodes in it's style
+int ast_node_print(token_t* node);
+
+
+int graphviz_add_ast_node(token_t* node);

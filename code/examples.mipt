@@ -1,5 +1,6 @@
 born
 enter_mipt
+    invent x 0.
     whisper_to_the_professor 0 in_the_ear.
 
 get_sent_down
@@ -79,3 +80,27 @@ get_sent_down
 die
 
 
+skill_to drink_beer
+enter_mipt
+    whisper_to_the_professor a in_the_ear.
+    hand_in 4 zadach.
+get_sent_down
+
+born
+enter_mipt
+    invent num 3.
+    invent x 1.
+
+    pereeb num nulevok_untill_they_run_out
+    enter_mipt
+        solve_nulevka num.
+        whisper_to_the_professor 1 in_the_ear.
+    get_sent_down
+
+    when x -> 0 togda
+    enter_mipt
+        whisper_to_the_professor 456 in_the_ear.
+    get_sent_down
+
+get_sent_down
+die

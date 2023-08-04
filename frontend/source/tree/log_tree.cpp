@@ -95,7 +95,7 @@ int link_nodes(token_t * node1, token_t * node2)
 }
 
 
-int node_link(token_t * node)
+int node_link(token_t* node)
 {
     if (node == nullptr)
         return 1;
@@ -116,10 +116,12 @@ int node_link(token_t * node)
 }
 
 
-int tree_print_dump(token_t * root)
+int tree_print_dump(token_t* root)
 {
+    printf("-- %d\n", graphviz_png_count);
     if (root == nullptr)
     {
+        printf("error in dump tree. root is null\n");
         return 1;
     }
 
@@ -152,4 +154,77 @@ unsigned get_node_color_from_type(token_type type)
     if (type == TYPE_NUM) return 0xDDB9E9;
 
     return 0xF0FFFF;
+}
+
+
+int ast_tree_print_dump(token_t* root)
+{
+    printf("-- %d\n", graphviz_png_count);
+    if (root == nullptr)
+    {
+        printf("error in dump tree. root is null\n");
+        return 1;
+    }
+
+    open_graphviz_file();
+    init_graphviz_file();
+
+    ast_node_print(root);
+    node_link(root);
+
+    close_graphviz_file();
+
+    char sys_cmd[200] = "dot frontend/logs/log_graphviz.dot -Tpng -o middleend/logs/images/tree_dump";
+    snprintf(sys_cmd + strlen(sys_cmd), 30, "%d.png", graphviz_png_count + 100);
+    system(sys_cmd);
+
+    //fprintf(log_file, "\n<img src=\"images/list_dump%d.png\" width=\"60%%\">\n", graphviz_png_count);
+
+    graphviz_png_count++;
+
+    return 0;
+}
+
+
+int ast_node_print(token_t* node)
+{
+    if (node == nullptr)
+        return 1;
+
+    graphviz_add_ast_node(node);
+
+    if (node->left_child != nullptr)
+        ast_node_print(node->left_child);
+
+    if (node->right_child != nullptr)
+        ast_node_print(node->right_child);
+
+    return 0;
+}
+
+
+int graphviz_add_ast_node(token_t* node)
+{
+    token_type type = node->type;
+    switch (type)
+    {
+        case TYPE_NUM:
+        {
+            fprintf(graphviz_file, "    node_%p[shape = Mrecord, label = \"{{%lg}}\", style = \"filled\", fillcolor = \"#%X\"];\n", node, node->value, get_node_color_from_type(type));
+            return 0;
+        }
+
+        case TYPE_VAR:
+        {
+            fprintf(graphviz_file, "    node_%p[shape = Mrecord, label = \"{{%s}}\", style = \"filled\", fillcolor = \"#%X\"];\n", node, node->word, get_node_color_from_type(type));
+            return 0;
+        }
+
+        default: 
+        {
+            fprintf(graphviz_file, "    node_%p[shape = Mrecord, label = \"{{%s}}\", style = \"filled\", fillcolor = \"#%X\"];\n", node, get_typename_from_toktype(type), get_node_color_from_type(type));
+            return 0;
+        }
+    }
+    return 0;
 }
