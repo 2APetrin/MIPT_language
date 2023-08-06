@@ -33,53 +33,6 @@ token_t* get_general(text_t* text)
 }
 
 
-token_t* get_def_function(text_t* text) 
-{
-    ASSERT(text);
-
-    if (TOKEN_BUFF[POS]->type != TYPE_FUNC_INIT) return nullptr;
-    FREE();
-
-    if (TOKEN_BUFF[POS]->type != TYPE_VAR)
-    {
-        printf("error in get function def. Error in name of function\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
-
-    token_t* ret_node       = create_node(TYPE_DOT, POISON);
-
-    TOKEN_BUFF[POS]->type   = TYPE_FUNC_ID;
-
-    token_t* middle_node    = create_node(TYPE_DOT, POISON);
-    middle_node->left_child = TOKEN_BUFF[POS];
-    TOKEN_BUFF[POS]->parent = middle_node;
-    middle_node->parent     = ret_node;
-    POS++;
-
-    if (TOKEN_BUFF[POS]->type == TYPE_O_BRCKT) FREE()
-    else
-    {
-        printf("error in get definition of func. Open bracket (enter_mipt) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
-
-    token_t* func_code = get_comp(text);
-
-    if (TOKEN_BUFF[POS]->type == TYPE_C_BRCKT) FREE()
-    else
-    {
-        printf("error in get definition of func. Close bracket (get_sent_down) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
-
-    middle_node->right_child = func_code;
-    if (func_code) func_code->parent = middle_node;
-    ret_node->left_child = middle_node;
-
-    return ret_node;
-} 
-
-
 token_t* get_start(text_t* text)
 {
     ASSERT(text);
@@ -293,9 +246,86 @@ token_t* get_variable_op(text_t* text)
     token_type type = TOKEN_BUFF[POS]->type;
 
     if (type == TYPE_VAR_INIT) return get_var_initialization(text);
-    if (type == TYPE_VAR)      return get_assignment(text);
+    if (type == TYPE_VAR)
+    {
+        for (unsigned i = 0; i < text->func_cnt; i++) 
+            if (!strcmp(text->func_names[i], TOKEN_BUFF[POS]->word)) return get_func_call(text);
+
+        return get_assignment(text);
+    }
 
     return nullptr;
+}
+
+
+token_t* get_func_call(text_t* text)
+{
+    if (TOKEN_BUFF[POS]->type != TYPE_VAR) return nullptr;
+
+    TOKEN_BUFF[POS]->type = TYPE_FUNC_CALL;
+
+    token_t* ret_node    = create_node(TYPE_DOT, POISON);
+    token_t* curr_node   = TOKEN_BUFF[POS];
+
+    ret_node->left_child = TOKEN_BUFF[POS];
+    curr_node->parent    = ret_node;
+    POS++;
+
+    if (TOKEN_BUFF[POS]->type != TYPE_O_F_BR)
+    {
+        printf("error in function call. Expexted (\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+    FREE();
+
+    token_t* temp      = nullptr;
+    token_t* var_root  = nullptr;
+    token_t* prev_node = nullptr;
+
+    if (TOKEN_BUFF[POS]->type != TYPE_C_F_BR)
+    {
+        temp      = get_expr(text);
+        var_root  = create_node(TYPE_DOT, POISON, temp, nullptr);
+        prev_node = var_root;
+
+        if (temp) temp->parent = prev_node;
+
+        while (TOKEN_BUFF[POS]->type == TYPE_VAR_SEPARATE)
+        {
+            FREE();
+
+            temp = create_node(TYPE_DOT, POISON, get_expr(text), nullptr);
+            prev_node->right_child = temp;
+
+            if (temp) temp->parent = prev_node;
+            if (temp->left_child) temp->left_child->parent = temp;
+
+            prev_node = temp;
+        }
+    }
+
+    if (TOKEN_BUFF[POS]->type != TYPE_C_F_BR)
+    {
+        printf("error in function call. Expexted )\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+    FREE();
+
+    //tree_print_dump(var_root);
+
+    ret_node->left_child->left_child = var_root;
+    if (var_root) var_root->parent = ret_node->left_child;
+
+    if (TOKEN_BUFF[POS]->type != TYPE_DOT)
+    {
+        printf("error in function call. Dot in the end is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+    FREE();
+
+    //tree_print_dump(ret_node);
+
+    return ret_node;
 }
 
 
@@ -320,6 +350,11 @@ token_t* get_var_initialization(text_t* text)
 
     curr_node->left_child   = TOKEN_BUFF[POS];
     TOKEN_BUFF[POS]->parent = curr_node;
+
+    text->var_buff[text->var_cnt]       = (var_t*) calloc (1, sizeof(var_t));
+    text->var_buff[text->var_cnt]->name = (char*)  calloc (MAX_WORD_LEN, sizeof(char));
+    //printf("%p %p\n", text->var_buff[text->var_cnt], text->var_buff[text->var_cnt]->name);
+    strncpy(text->var_buff[text->var_cnt]->name, TOKEN_BUFF[POS]->word, MAX_WORD_LEN-1);
     POS++;
 
     if (TOKEN_BUFF[POS]->type != TYPE_NUM)
@@ -330,6 +365,8 @@ token_t* get_var_initialization(text_t* text)
 
     curr_node->right_child = TOKEN_BUFF[POS];
     TOKEN_BUFF[POS]->parent = curr_node;
+
+    sscanf(TOKEN_BUFF[POS]->word, "%lg", &text->var_buff[text->var_cnt]->value);
     POS++;
 
     if (TOKEN_BUFF[POS]->type != TYPE_DOT)
@@ -338,6 +375,8 @@ token_t* get_var_initialization(text_t* text)
         return nullptr;
     }
     FREE();
+
+    text->var_cnt++;
 
     return ret_node;
 }
@@ -362,17 +401,26 @@ token_t* get_assignment(text_t* text)
     middle_part->parent     = ret_root;
     POS++;
 
-    token_t* right_part = get_expr(text);
+
+    token_t* right_part = nullptr;
+    for (unsigned i = 0; i < text->func_cnt; i++) 
+        if (!strcmp(text->func_names[i], TOKEN_BUFF[POS]->word)) right_part = get_func_call(text);
+
+    if (!right_part)
+    {
+        right_part = get_expr(text);
+
+        if (TOKEN_BUFF[POS]->type != TYPE_DOT)
+        {
+            printf("error in var assignment. Dot in the end is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+            return nullptr;
+        }
+        FREE();
+    }
 
     middle_part->right_child           = right_part;
     if (right_part) right_part->parent = middle_part;
 
-    if (TOKEN_BUFF[POS]->type != TYPE_DOT)
-    {
-        printf("error in var assignment. Dot in the end is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
-    FREE();
 
     return ret_root;
 }
@@ -626,4 +674,90 @@ token_t* get_print(text_t* text)
     FREE();
 
     return ret_root;
+}
+
+
+token_t* get_def_function(text_t* text) 
+{
+    ASSERT(text);
+
+    if (TOKEN_BUFF[POS]->type != TYPE_FUNC_INIT) return nullptr;
+    FREE();
+
+    if (TOKEN_BUFF[POS]->type != TYPE_VAR)
+    {
+        printf("error in get function def. Error in name of function\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+
+    token_t* ret_node       = create_node(TYPE_DOT, POISON);
+
+    TOKEN_BUFF[POS]->type   = TYPE_FUNC_ID;
+
+    ret_node->left_child = TOKEN_BUFF[POS];
+    TOKEN_BUFF[POS]->parent = ret_node;
+
+    token_t* middle_node = TOKEN_BUFF[POS];
+
+    text->func_names[text->func_cnt] = (char*) calloc (MAX_WORD_LEN, sizeof(char));
+    strncpy(text->func_names[text->func_cnt], TOKEN_BUFF[POS]->word, MAX_WORD_LEN-1);
+    text->func_cnt++;
+
+    POS++;
+
+    if (TOKEN_BUFF[POS]->type != TYPE_O_F_BR)
+    {
+        printf("error in get function def. Error in def of function. Expexted (\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+    FREE();
+
+    token_t* temp      = get_expr(text);
+    token_t* var_root  = create_node(TYPE_DOT, POISON, temp, nullptr);
+    token_t* prev_node = var_root;
+
+    if (temp) temp->parent = prev_node;
+
+    while (TOKEN_BUFF[POS]->type == TYPE_VAR_SEPARATE)
+    {
+        FREE();
+
+        temp = create_node(TYPE_DOT, POISON, get_expr(text), nullptr);
+        prev_node->right_child = temp;
+        if (temp) temp->parent = prev_node;
+
+        if (temp->left_child) temp->left_child->parent = temp;
+        prev_node = temp;
+    }
+
+    if (TOKEN_BUFF[POS]->type != TYPE_C_F_BR)
+    {
+        printf("error in get function def. Error in def of function. Expexted )\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+    FREE();
+
+    if (TOKEN_BUFF[POS]->type == TYPE_O_BRCKT) FREE()
+    else
+    {
+        printf("error in get definition of func. Open bracket (enter_mipt) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+
+    token_t* func_code = get_comp(text);
+
+    if (TOKEN_BUFF[POS]->type == TYPE_C_BRCKT) FREE()
+    else
+    {
+        printf("error in get definition of func. Close bracket (get_sent_down) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        return nullptr;
+    }
+
+    middle_node->left_child  = var_root;
+    if (var_root) var_root->parent = middle_node;
+
+    middle_node->right_child = func_code;
+    if (func_code) func_code->parent = middle_node;
+
+    return ret_node;
 }

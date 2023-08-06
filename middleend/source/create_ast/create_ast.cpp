@@ -119,9 +119,11 @@ token_t* get_module(ast_tree_t* tree)
             return create_node(TYPE_DOT, POISON, left_node, right_node);
         }
 
+        case TYPE_DECREASE:
+        case TYPE_RETURN:
         case TYPE_PRINT:
         {
-            printf("entered type print\n"); 
+            //printf("entered type print\n"); 
             token_t* left_node = get_module(tree);
             if (!left_node)
             {
@@ -136,9 +138,9 @@ token_t* get_module(ast_tree_t* tree)
             }
             T_POS++;
 
-            token_t* ret = create_node(TYPE_PRINT, POISON, left_node, nullptr);
+            token_t* ret = create_node((token_type) cmd, POISON, left_node, nullptr);
 
-            printf("print ptr - %p\n", ret);
+            //printf("print ptr - %p\n", ret);
 
             return ret;
         }
@@ -164,7 +166,7 @@ token_t* get_module(ast_tree_t* tree)
             }
             T_POS += (unsigned) num_len;
 
-            printf("num len - %d\n", num_len);
+            //printf("num len - %d\n", num_len);
 
             if (BUFF[T_POS] != ')')
             {
@@ -175,7 +177,105 @@ token_t* get_module(ast_tree_t* tree)
 
             token_t* ret = create_node(TYPE_NUM, num, nullptr, nullptr);
 
-            printf("num ptr - %p\n", ret);
+            //printf("num ptr - %p\n", ret);
+
+            return ret;
+        }
+
+        case TYPE_FUNC_ID: // остановился тут на дописывании случаев для объявления функции и вызова функции. надо сделать чтобы после имени функции возможно шли скобки открывающиеся
+        {
+            if (BUFF[T_POS] != ':')
+            {
+                fprintf(log_file, "<pre>error in pos %u. Expected :, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                return nullptr;
+            }
+            T_POS++;
+
+            char word[MAX_WORD_LEN] = {0};
+            int  len = 0;
+
+            sscanf(BUFF + T_POS, "%127[_a-z]%n", word, &len);
+            if (!len)
+            {
+                fprintf(log_file, "<pre>error in pos %u. Expected var, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                return nullptr;
+            }
+            T_POS += (unsigned) len;
+
+            token_t* var_root  = get_module(tree);
+            token_t* code_node = get_module(tree);
+
+            token_t* ret    = create_node(TYPE_FUNC_ID, POISON, nullptr, nullptr);
+            ret->word       = (char*) calloc (MAX_WORD_LEN, sizeof(char));
+
+            ret->left_child  = var_root;
+            ret->right_child = code_node;
+
+            strncpy(ret->word, word, MAX_WORD_LEN-1);
+
+            if (BUFF[T_POS] != ')')
+            {
+                fprintf(log_file, "<pre>error in pos %u. Expected ) (var), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                return nullptr;
+            }
+            T_POS++;
+
+            /* while (curr_node)
+            {
+                temp = get_module(tree);
+                curr_node->right_child = temp;
+
+                curr_node = temp;
+            }
+
+            if (BUFF[T_POS] != ')')
+            {
+                fprintf(log_file, "<pre>error in pos %u. Expected ) (var), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                return nullptr;
+            }
+            T_POS++;
+
+            token_t* ret = create_node(TYPE_VAR, POISON, nullptr, nullptr);
+            ret->word = (char*) calloc (MAX_WORD_LEN, sizeof(char));
+            strncpy(ret->word, word, MAX_WORD_LEN-1);
+
+            ret->left_child = var_root; */ 
+
+            return ret;
+        }
+
+        case TYPE_FUNC_CALL:
+        {
+            if (BUFF[T_POS] != ':')
+            {
+                fprintf(log_file, "<pre>error in pos %u. Expected :, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                return nullptr;
+            }
+            T_POS++;
+
+            char word[MAX_WORD_LEN] = {0};
+            int  len = 0;
+
+            sscanf(BUFF + T_POS, "%127[_a-z]%n", word, &len);
+            if (!len)
+            {
+                fprintf(log_file, "<pre>error in pos %u. Expected var, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                return nullptr;
+            }
+            T_POS += (unsigned) len;
+
+            token_t* var_root  = get_module(tree);
+
+            token_t* ret    = create_node(TYPE_FUNC_CALL, POISON, var_root, nullptr);
+            ret->word       = (char*) calloc (MAX_WORD_LEN, sizeof(char));
+            strncpy(ret->word, word, MAX_WORD_LEN-1);
+
+            if (BUFF[T_POS] != ')')
+            {
+                fprintf(log_file, "<pre>error in pos %u. Expected ) (var), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                return nullptr;
+            }
+            T_POS++;
 
             return ret;
         }
@@ -189,10 +289,10 @@ token_t* get_module(ast_tree_t* tree)
             }
             T_POS++;
 
-            char word[20] = {0};
+            char word[MAX_WORD_LEN] = {0};
             int  len = 0;
 
-            sscanf(BUFF + T_POS, "%19[a-z]%n", word, &len);
+            sscanf(BUFF + T_POS, "%127[_a-z]%n", word, &len);
             if (!len)
             {
                 fprintf(log_file, "<pre>error in pos %u. Expected var, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
@@ -209,7 +309,7 @@ token_t* get_module(ast_tree_t* tree)
 
             token_t* ret = create_node(TYPE_VAR, POISON, nullptr, nullptr);
             ret->word = (char*) calloc (MAX_WORD_LEN, sizeof(char));
-            strncpy(ret->word, word, 19);
+            strncpy(ret->word, word, MAX_WORD_LEN-1);
 
             return ret;
         }

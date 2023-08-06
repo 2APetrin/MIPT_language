@@ -82,6 +82,10 @@ token_type get_tok_type(const char* word)
 
     if (!strcmp(word, "hand_in"))         return TYPE_RETURN;
     if (!strcmp(word, "zadach"))          return TYPE_RETURN_BRCKT;
+    if (!strcmp(word, "|"))               return TYPE_VAR_SEPARATE;
+    if (!strcmp(word, "["))               return TYPE_O_F_BR;
+    if (!strcmp(word, "]"))               return TYPE_C_F_BR;
+
 
     if (!strcmp(word, "nulevok_untill_they_run_out")) return TYPE_LOOP_CLOSE;
 
@@ -138,6 +142,12 @@ const char* get_typename_from_toktype(token_type type_num)
         case TYPE_RETURN:       return "return";
         case TYPE_RETURN_BRCKT: return "ret bracket";
 
+        case TYPE_FUNC_CALL:    return "func call";
+        case TYPE_VAR_SEPARATE: return "separate";
+
+        case TYPE_O_F_BR:       return "[";
+        case TYPE_C_F_BR:       return "]";
+
         default: return nullptr;
     }
     return nullptr;
@@ -182,6 +192,7 @@ int write_subtree_preorder(token_t* node, FILE* stream)
             break;
 
         case TYPE_VAR:
+        case TYPE_FUNC_CALL:
         case TYPE_FUNC_ID:
             fprintf(stream, "(%d:%s", node->type, node->word);
             break;

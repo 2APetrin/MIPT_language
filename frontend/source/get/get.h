@@ -39,3 +39,5 @@ token_t* get_loop(text_t* text);
 token_t* get_decrease(text_t* text);
 
 token_t* get_return(text_t* text);
+
+token_t* get_func_call(text_t* text);

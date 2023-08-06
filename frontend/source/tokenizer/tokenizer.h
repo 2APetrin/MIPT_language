@@ -46,6 +46,9 @@ extern FILE* code_file;
 typedef double elem_t;
 
 
+//! @brief max nuber of funcs
+const unsigned MAX_FUNC_CNT = 1024;
+
 //! @brief maximum length of word
 const unsigned MAX_WORD_LEN  = 128;
 
@@ -111,7 +114,12 @@ enum token_type
     TYPE_FUNC_ID      = 31,
 
     TYPE_RETURN       = 32,
-    TYPE_RETURN_BRCKT = 33
+    TYPE_RETURN_BRCKT = 33,
+    TYPE_FUNC_CALL    = 34,
+    TYPE_VAR_SEPARATE = 35,
+
+    TYPE_O_F_BR       = 36,
+    TYPE_C_F_BR       = 37
 };
 
 
@@ -152,8 +160,11 @@ typedef struct
     token_t*  tree_root;
     token_t*  end;
 
-    unsigned  var_cnt;
     var_t**   var_buff;
+    unsigned  var_cnt;
+
+    char**    func_names;
+    unsigned  func_cnt;
 
     code_buff_t code_buff;
 } text_t;

@@ -1,19 +1,24 @@
+skill_to add [ a | b ]
+enter_mipt
+    hand_in a + b zadach.
+get_sent_down
+
+
+skill_to mul [ a | b ]
+enter_mipt
+    hand_in a * b zadach.
+get_sent_down
+
+
 born
 enter_mipt
-    invent x 0.
-    x podgon_pod 10.
+    invent x 1.
+    invent y 2.
 
-    when x <-> 0 togda
-    enter_mipt
-        whisper_to_the_professor 0 in_the_ear.
-        x podgon_pod 0.
-    get_sent_down
+    x podgon_pod add [ x | 3 ].
+    x podgon_pod mul [ x | y ].
 
-    when_nepravilno
-    enter_mipt
-        whisper_to_the_professor 1 + 2 in_the_ear.
-        x podgon_pod 1.
-    get_sent_down
+    whisper_to_the_professor x in_the_ear.
 
 get_sent_down
 die

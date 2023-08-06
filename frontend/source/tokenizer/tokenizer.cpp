@@ -16,6 +16,7 @@ int text_ctor(const char* codefile_name, text_t* text)
     VAR_BUFF   = nullptr;
     text->end  = nullptr;
     text->tree_root = nullptr;
+    text->var_buff  = nullptr;
     text->var_cnt   = 0;
     POS             = 0;
 
@@ -53,6 +54,8 @@ int text_ctor(const char* codefile_name, text_t* text)
     }
 
     VAR_BUFF = (var_t**) calloc(MAX_VAR_COUNT, sizeof(var_t*));
+
+    text->func_names = (char**)  calloc (MAX_FUNC_CNT, sizeof(char*));
 
     //for (unsigned i = 0; i < WORDS_CNT; i++) printf("%s\nline - %u\npos - %u\n\n", TOKEN_BUFF[i]->word, TOKEN_BUFF[i]->line, TOKEN_BUFF[i]->pos);
 
@@ -233,7 +236,17 @@ int text_dtor(text_t* text)
     free(TEXT_BUFF);
     free(TEXT_LINES);
     free(TOKEN_BUFF);
-    free(VAR_BUFF);
+
+    for (unsigned i = 0; i < text->func_cnt; i++) free(text->func_names[i]);
+    free(text->func_names);
+
+    for (unsigned i = 0; i < text->var_cnt; i++)
+    {
+        printf("%u) %s - %lg\n", i, text->var_buff[i]->name, text->var_buff[i]->value);
+        free(text->var_buff[i]->name);
+        free(text->var_buff[i]);
+    }
+    free(text->var_buff);
 
     printf("Text struct + tree are destructed\n");
 

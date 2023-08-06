@@ -70,20 +70,17 @@ enter_mipt
 
     drink_beer ( 1 ).
 
-    when x -> 0 togda
+    when x <-> 0 togda
         whisper_to_the_professor 456 in_the_ear.
-
-    when_nepravilno
-        whisper_to_the_professor 123 in_the_ear.
 
 get_sent_down
 die
 
 
-skill_to drink_beer
+skill_to botat [ a | b | c ]
 enter_mipt
-    whisper_to_the_professor a in_the_ear.
-    hand_in 4 zadach.
+    whisper_to_the_professor a + b in_the_ear.
+    hand_in 0 zadach.
 get_sent_down
 
 born
@@ -91,16 +88,31 @@ enter_mipt
     invent num 3.
     invent x 1.
 
-    pereeb num nulevok_untill_they_run_out
-    enter_mipt
-        solve_nulevka num.
-        whisper_to_the_professor 1 in_the_ear.
-    get_sent_down
+    x podgon_pod botat [ num | x | kok ].
 
-    when x -> 0 togda
-    enter_mipt
-        whisper_to_the_professor 456 in_the_ear.
-    get_sent_down
+get_sent_down
+die
+
+
+skill_to add [ a | b ]
+enter_mipt
+    hand_in a + b zadach.
+get_sent_down
+
+skill_to mul [ a | b ]
+enter_mipt
+    hand_in a * b zadach.
+get_sent_down
+
+born
+enter_mipt
+    invent x 1.
+    invent y 2.
+
+    x podgon_pod add [ x | 3 ].
+    x podgon_pod mul [ x | y ].
+
+    whisper_to_the_professor x in_the_ear.
 
 get_sent_down
 die

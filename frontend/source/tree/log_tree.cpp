@@ -118,7 +118,7 @@ int node_link(token_t* node)
 
 int tree_print_dump(token_t* root)
 {
-    printf("-- %d\n", graphviz_png_count);
+    //printf("-- %d\n", graphviz_png_count);
     if (root == nullptr)
     {
         printf("error in dump tree. root is null\n");
@@ -159,7 +159,7 @@ unsigned get_node_color_from_type(token_type type)
 
 int ast_tree_print_dump(token_t* root)
 {
-    printf("-- %d\n", graphviz_png_count);
+    //printf("-- %d\n", graphviz_png_count);
     if (root == nullptr)
     {
         printf("error in dump tree. root is null\n");
@@ -214,6 +214,8 @@ int graphviz_add_ast_node(token_t* node)
             return 0;
         }
 
+        case TYPE_FUNC_CALL:
+        case TYPE_FUNC_ID:
         case TYPE_VAR:
         {
             fprintf(graphviz_file, "    node_%p[shape = Mrecord, label = \"{{%s}}\", style = \"filled\", fillcolor = \"#%X\"];\n", node, node->word, get_node_color_from_type(type));
