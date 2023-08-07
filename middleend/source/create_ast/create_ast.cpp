@@ -3,30 +3,31 @@
 #include "../../../frontend/source/tree/tree.h"
 #include "../../../frontend/source/tree/log_tree.h"
 
-FILE* log_file;
-
+FILE* ast_log_file;
 
 int read_ast_tree(void)
 {
     ast_tree_t ast_tree = {0};
 
-    log_file = fopen("middleend/logs/log.html", "w");
-    if (!log_file)
+    ast_log_file = fopen("middleend/logs/log.html", "w");
+    if (!ast_log_file)
     {
         printf("cannot open log file, programm shutdown\n");
         return 1;
     }
-    fprintf(log_file, "<html>\n");
+    fprintf(ast_log_file, "<html>\n");
 
     if (ast_ctor(&ast_tree, "temp/ast_tree.ast")) return 1;
 
     create_ast_tree(&ast_tree);
-    printf("tree ready\n");
+    printf("Tree is ready\n");
 
     ast_tree_print_dump(ast_tree.ast_root);
 
-    fprintf(log_file, "</html>");
-    fclose (log_file);
+    fprintf(ast_log_file, "\n</html>\n");
+    fclose (ast_log_file);
+
+    tree_free(ast_tree.ast_root);
 
     return 0;
 }
@@ -80,7 +81,7 @@ token_t* get_module(ast_tree_t* tree)
 {
     if (BUFF[T_POS] != '(')
     {
-        //fprintf(log_file, "<pre>error in pos %u. module. Expected (, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+        //fprintf(ast_log_file, "<pre>error in pos %u. module. Expected (, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
         return nullptr;
     }
     T_POS++;
@@ -90,7 +91,7 @@ token_t* get_module(ast_tree_t* tree)
 
     if (!sscanf(BUFF + T_POS, "%d%n", &cmd, &cmd_len))
     {
-        fprintf(log_file, "<pre>error in pos %u. Expected command, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+        fprintf(ast_log_file, "<pre>error in pos %u. Expected command, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
         return nullptr;
     }
 
@@ -103,7 +104,7 @@ token_t* get_module(ast_tree_t* tree)
             token_t* left_node  = get_module(tree);
             if (!left_node)
             {
-                fprintf(log_file, "<pre>error in pos %u. Expected ( (left module), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u. Expected ( (left module), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
 
@@ -111,7 +112,7 @@ token_t* get_module(ast_tree_t* tree)
 
             if (BUFF[T_POS] != ')')
             {
-                fprintf(log_file, "<pre>error in pos %u. Expected ) (right module), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u. Expected ) (right module), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
             T_POS++;
@@ -127,13 +128,13 @@ token_t* get_module(ast_tree_t* tree)
             token_t* left_node = get_module(tree);
             if (!left_node)
             {
-                fprintf(log_file, "<pre>error in pos %u (print). Expected (, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u (print). Expected (, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
 
             if (BUFF[T_POS] != ')')
             {
-                fprintf(log_file, "<pre>error in pos %u (print). Expected ), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u (print). Expected ), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
             T_POS++;
@@ -149,35 +150,31 @@ token_t* get_module(ast_tree_t* tree)
         {
             if (BUFF[T_POS] != ':')
             {
-                fprintf(log_file, "<pre>error in pos %u. Expected :, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u. Expected :, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
             T_POS++;
 
-            int num     = 0;
+            elem_t num  = 0;
             int num_len = 0;
 
-            sscanf(BUFF + T_POS, "%d%n", &num, &num_len);
+            sscanf(BUFF + T_POS, "%lg%n", &num, &num_len);
 
             if (!num_len)
             {
-                fprintf(log_file, "<pre>error in pos %u. Expected number, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u. Expected number, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
             T_POS += (unsigned) num_len;
 
-            //printf("num len - %d\n", num_len);
-
             if (BUFF[T_POS] != ')')
             {
-                fprintf(log_file, "<pre>error in pos %u. Expected ) (num), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u. Expected ) (num), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
             T_POS++;
 
             token_t* ret = create_node(TYPE_NUM, num, nullptr, nullptr);
-
-            //printf("num ptr - %p\n", ret);
 
             return ret;
         }
@@ -186,7 +183,7 @@ token_t* get_module(ast_tree_t* tree)
         {
             if (BUFF[T_POS] != ':')
             {
-                fprintf(log_file, "<pre>error in pos %u. Expected :, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u. Expected :, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
             T_POS++;
@@ -197,7 +194,7 @@ token_t* get_module(ast_tree_t* tree)
             sscanf(BUFF + T_POS, "%127[_a-z]%n", word, &len);
             if (!len)
             {
-                fprintf(log_file, "<pre>error in pos %u. Expected var, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u. Expected var, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
             T_POS += (unsigned) len;
@@ -215,31 +212,10 @@ token_t* get_module(ast_tree_t* tree)
 
             if (BUFF[T_POS] != ')')
             {
-                fprintf(log_file, "<pre>error in pos %u. Expected ) (var), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u. Expected ) (var), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
             T_POS++;
-
-            /* while (curr_node)
-            {
-                temp = get_module(tree);
-                curr_node->right_child = temp;
-
-                curr_node = temp;
-            }
-
-            if (BUFF[T_POS] != ')')
-            {
-                fprintf(log_file, "<pre>error in pos %u. Expected ) (var), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
-            T_POS++;
-
-            token_t* ret = create_node(TYPE_VAR, POISON, nullptr, nullptr);
-            ret->word = (char*) calloc (MAX_WORD_LEN, sizeof(char));
-            strncpy(ret->word, word, MAX_WORD_LEN-1);
-
-            ret->left_child = var_root; */ 
 
             return ret;
         }
@@ -248,7 +224,7 @@ token_t* get_module(ast_tree_t* tree)
         {
             if (BUFF[T_POS] != ':')
             {
-                fprintf(log_file, "<pre>error in pos %u. Expected :, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u. Expected :, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
             T_POS++;
@@ -259,7 +235,7 @@ token_t* get_module(ast_tree_t* tree)
             sscanf(BUFF + T_POS, "%127[_a-z]%n", word, &len);
             if (!len)
             {
-                fprintf(log_file, "<pre>error in pos %u. Expected var, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u. Expected var, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
             T_POS += (unsigned) len;
@@ -272,7 +248,7 @@ token_t* get_module(ast_tree_t* tree)
 
             if (BUFF[T_POS] != ')')
             {
-                fprintf(log_file, "<pre>error in pos %u. Expected ) (var), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u. Expected ) (var), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
             T_POS++;
@@ -284,7 +260,7 @@ token_t* get_module(ast_tree_t* tree)
         {
             if (BUFF[T_POS] != ':')
             {
-                fprintf(log_file, "<pre>error in pos %u. Expected :, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u. Expected :, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
             T_POS++;
@@ -295,14 +271,14 @@ token_t* get_module(ast_tree_t* tree)
             sscanf(BUFF + T_POS, "%127[_a-z]%n", word, &len);
             if (!len)
             {
-                fprintf(log_file, "<pre>error in pos %u. Expected var, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u. Expected var, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
             T_POS += (unsigned) len;
 
             if (BUFF[T_POS] != ')')
             {
-                fprintf(log_file, "<pre>error in pos %u. Expected ) (var), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u. Expected ) (var), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
             T_POS++;
@@ -324,7 +300,7 @@ token_t* get_module(ast_tree_t* tree)
 
             if (BUFF[T_POS] != ')')
             {
-                fprintf(log_file, "<pre>error in pos %u. Expected ), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+                fprintf(ast_log_file, "<pre>error in pos %u. Expected ), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
                 return nullptr;
             }
             T_POS++;
@@ -333,6 +309,7 @@ token_t* get_module(ast_tree_t* tree)
             return ret;
         }
     }
+    return nullptr;
 }
 
 

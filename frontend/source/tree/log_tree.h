@@ -4,12 +4,12 @@
 
 //! @brief log_file
 //!
-extern FILE * log_file;
+extern FILE* log_file;
 
 
 //! @brief graphviz file
 //!
-extern FILE * graphviz_file;
+extern FILE* graphviz_file;
 
 
 //! @brief extern counter for graphviz pngs

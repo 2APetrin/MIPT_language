@@ -1,118 +1,66 @@
 born
 enter_mipt
-    invent x 0.
-    whisper_to_the_professor 0 in_the_ear.
+    whisper_to_the_professor 0 in_the_ear$
 
 get_sent_down
 die
 
 
-born
-enter_mipt
-    invent x 0.
-    x podgon_pod 10.
-
-    when x <-> 0 togda
-    enter_mipt
-        whisper_to_the_professor 0 in_the_ear.
-        x podgon_pod 0.
-    get_sent_down
-
-    when_nepravilno
-    enter_mipt
-        whisper_to_the_professor 1 + 2 in_the_ear.
-        x podgon_pod 1.
-    get_sent_down
-
-get_sent_down
-die
-
 
 born
 enter_mipt
-    invent x 0.
-    x podgon_pod 5.
+    invent x 5$
 
     pereeb x nulevok_untill_they_run_out
     enter_mipt
-        whisper_to_the_professor 42 in_the_ear.
-        solve_nulevka x.
-    get_sent_down
-
-    invent y 0.
-    y podgon_pod 1.
-
-    when x -> y togda
-    enter_mipt
-        solve_nulevka x.
+        whisper_to_the_professor x in_the_ear$
     get_sent_down
 
 get_sent_down
 die
 
-
-skill_to drink_beer ( num )
-enter_mipt
-    whisper_to_the_professor num in_the_ear.
-    hand_in 0 zadach.
-get_sent_down
-
-born
-enter_mipt
-    invent num 3.
-    invent x 1.
-
-    pereeb num nulevok_untill_they_run_out
-    enter_mipt
-        solve_nulevka num.
-        whisper_to_the_professor 1 in_the_ear.
-    get_sent_down
-
-    drink_beer ( 1 ).
-
-    when x <-> 0 togda
-        whisper_to_the_professor 456 in_the_ear.
-
-get_sent_down
-die
 
 
 skill_to botat [ a | b | c ]
 enter_mipt
-    whisper_to_the_professor a + b in_the_ear.
-    hand_in 0 zadach.
+    whisper_to_the_professor a + b in_the_ear$
+    hand_in 0 zadach$
 get_sent_down
 
 born
 enter_mipt
-    invent num 3.
-    invent x 1.
+    invent num 3$
+    invent x 1$
+    invent kok 100$
 
-    x podgon_pod botat [ num | x | kok ].
+    x podgon_pod botat [ num | 1.1 | kok ]$
 
 get_sent_down
 die
 
 
+
 skill_to add [ a | b ]
 enter_mipt
-    hand_in a + b zadach.
+    hand_in a + b zadach$
 get_sent_down
 
-skill_to mul [ a | b ]
+skill_to mul [ c | b ]
 enter_mipt
-    hand_in a * b zadach.
+    hand_in a * b zadach$
 get_sent_down
 
 born
 enter_mipt
-    invent x 1.
-    invent y 2.
+    invent x 1$
+    invent y 2$
+    invent x 10.05$
+    invent c 11$
 
-    x podgon_pod add [ x | 3 ].
-    x podgon_pod mul [ x | y ].
+    x podgon_pod add [ x | 3.66 ]$
+    x podgon_pod mul [ x | y ]$
 
-    whisper_to_the_professor x in_the_ear.
+    whisper_to_the_professor x in_the_ear$
 
 get_sent_down
 die

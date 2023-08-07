@@ -5,37 +5,24 @@
 #include <ctype.h>
 #include <string.h>
 
-//#include "../tree/tree.h"
+#include "DSL.h"
 
-#define ASSERT(cond)                                                     \
-    if (!(cond))                                                          \
-    {                                                                      \
-        printf("\nError in %s in line %d in function %s in file %s\n\n",    \
-                #cond, __LINE__, __PRETTY_FUNCTION__, __FILE__),             \
-        abort();                                                              \
-    }
+#define ASSERT(cond)                                                 \
+if (!(cond))                                                          \
+{                                                                      \
+    printf("\nError in %s in line %d in function %s in file %s\n\n",    \
+            #cond, __LINE__, __PRETTY_FUNCTION__, __FILE__),             \
+    abort();                                                              \
+}
 
-#define FREE()                    \
-    {                              \
-    POS++;                          \
-    free(TOKEN_BUFF[POS-1]->word);   \
-    free(TOKEN_BUFF[POS-1]);          \
-    }
-
-
-// ========================== DSL ==========================
-
-#define TEXT_LINES text->code_buff.text_lines // pointers to first elements of lines
-#define TEXT_BUFF  text->code_buff.text_buff
-#define TEXT_LEN   text->code_buff.text_len   // number of symbols in text without 0 in the end
-#define WORDS_CNT  text->code_buff.words_cnt
-#define LINES_CNT  text->code_buff.lines_cnt
-#define VAR_CNT    text->var_cnt
-#define POS        text->position
-#define TOKEN_BUFF text->token_buff
-#define VAR_BUFF   text->var_buff
-
-// =========================================================
+#define FREE()                     \
+{                                   \
+    POS++;                           \
+    free(TOKEN_BUFF[POS-1]->word);    \
+    TOKEN_BUFF[POS-1]->word = nullptr; \
+    free(TOKEN_BUFF[POS-1]);            \
+    TOKEN_BUFF[POS-1] = nullptr;         \
+}
 
 
 //! @brief extern code file
@@ -57,6 +44,14 @@ const unsigned MAX_WORD_LEN  = 128;
 const unsigned MAX_VAR_COUNT = 128;
 
 
+//! @brief maximum number of connecting elements
+const unsigned MAX_DOT_COUNT = (1 << 13);
+
+
+//! @brief const for error while compiling
+const int COMPILE_ERROR = 1;
+
+
 //! @brief universal const for poison
 const unsigned POISON = 0xDEADBEEF;
 
@@ -67,6 +62,15 @@ typedef struct
     char*  name;
     elem_t value;
 } var_t;
+
+
+//! @brief struct of function
+typedef struct 
+{
+    char*    name;
+    unsigned var_cnt;
+} func_t;
+
 
 
 //! @brief types of lexical tokens
@@ -154,7 +158,7 @@ typedef struct
 //! @brief struct of our code
 typedef struct
 {
-    unsigned  position;   // universal var
+    unsigned  position;   // universal position counter
 
     token_t** token_buff;
     token_t*  tree_root;
@@ -163,10 +167,15 @@ typedef struct
     var_t**   var_buff;
     unsigned  var_cnt;
 
-    char**    func_names;
+    func_t**  func_buff;
     unsigned  func_cnt;
 
+    token_t** dot_tokens;
+    unsigned  dot_count;
+
     code_buff_t code_buff;
+
+    int       status;
 } text_t;
 
 
@@ -195,7 +204,7 @@ int skip_blanks(text_t* text, unsigned int i);
 
 
 //! @brief destructor of text struct
-int text_dtor(text_t* text);
+void text_dtor(text_t* text);
 
 
 //! @brief gets tokens from line

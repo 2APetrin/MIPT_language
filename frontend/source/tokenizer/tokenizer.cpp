@@ -4,7 +4,6 @@
 
 FILE* code_file = nullptr;
 
-
 int text_ctor(const char* codefile_name, text_t* text)
 {
     ASSERT(codefile_name);
@@ -15,10 +14,9 @@ int text_ctor(const char* codefile_name, text_t* text)
     TOKEN_BUFF = nullptr;
     VAR_BUFF   = nullptr;
     text->end  = nullptr;
+    VAR_CNT    = 0;
+    POS        = 0;
     text->tree_root = nullptr;
-    text->var_buff  = nullptr;
-    text->var_cnt   = 0;
-    POS             = 0;
 
     if (open_read_file(codefile_name, &code_file)) return 1;
 
@@ -33,33 +31,97 @@ int text_ctor(const char* codefile_name, text_t* text)
     TEXT_BUFF[TEXT_LEN] = '\0';
 
     get_num_of_lines(text);   // puts 0 instead of \n
-    //printf("num of lines %u\n", LINES_CNT);
 
     TEXT_LINES = (char**) calloc(LINES_CNT, sizeof(char*));
     if (!TEXT_LINES) return 1;
 
     get_strings(text);
-    //for (unsigned i = 0; i < LINES_CNT; i++) printf("%s\n", TEXT_LINES[i]);   // debug print
-
     get_num_of_words(text);
-    //printf("num of words %u\n\n", WORDS_CNT);
+
     TOKEN_BUFF = (token_t**) calloc(WORDS_CNT, sizeof(token_t*));
     if (!TOKEN_BUFF) return 1;
 
     if (get_tokens(text))
     {
-        // dtor
-        printf("Error in assembly\nnothing happened\n");
+        printf("Error in tokenization\nnothing happened\n");
         return 1;
     }
 
-    VAR_BUFF = (var_t**) calloc(MAX_VAR_COUNT, sizeof(var_t*));
-
-    text->func_names = (char**)  calloc (MAX_FUNC_CNT, sizeof(char*));
-
-    //for (unsigned i = 0; i < WORDS_CNT; i++) printf("%s\nline - %u\npos - %u\n\n", TOKEN_BUFF[i]->word, TOKEN_BUFF[i]->line, TOKEN_BUFF[i]->pos);
+    VAR_BUFF     = (var_t**)   calloc(MAX_VAR_COUNT, sizeof(var_t*));
+    FUNC_BUFF    = (func_t**)  calloc(MAX_FUNC_CNT,  sizeof(func_t*));
+    DOTS_BUFF    = (token_t**) calloc(MAX_DOT_COUNT, sizeof(token_t*));
+    DOTS_CNT     = 0;
+    text->status = 0;
 
     return 0;
+}
+
+
+void text_dtor(text_t* text)
+{
+    ASSERT(text);
+
+    free(TEXT_BUFF);
+    TEXT_BUFF  = nullptr;
+    free(TEXT_LINES);
+    TEXT_LINES = nullptr;
+
+    if (text->status)
+    {
+        printf ("\nERROR in code. Nothing happened. Go see frontend_log!\n");
+
+        for (unsigned i = 0; i < DOTS_CNT; i++)
+        {
+            free(DOTS_BUFF[i]);
+            DOTS_BUFF[i] = nullptr;
+        }
+
+        for (unsigned i = 0; i < WORDS_CNT; i++)
+        {
+            if (TOKEN_BUFF[i])
+            {
+                free (TOKEN_BUFF[i]->word);
+                TOKEN_BUFF[i]->word = nullptr;
+            }
+            free(TOKEN_BUFF[i]);
+            TOKEN_BUFF[i] = nullptr;
+        }
+    }
+    else
+        tree_free(text->tree_root);
+
+    text->tree_root = nullptr;
+
+    free(TOKEN_BUFF);
+    TOKEN_BUFF = nullptr;
+
+    for (unsigned i = 0; i < FUNC_CNT; i++)
+    {
+        free(FUNC_BUFF[i]->name);
+        FUNC_BUFF[i]->name = nullptr;
+
+        free(FUNC_BUFF[i]);
+        FUNC_BUFF[i] = nullptr;
+    }
+
+    free(FUNC_BUFF);
+    FUNC_BUFF = nullptr;
+
+    for (unsigned i = 0; i < VAR_CNT; i++)
+    {
+        free(VAR_BUFF[i]->name);
+        VAR_BUFF[i]->name = nullptr;
+
+        free(VAR_BUFF[i]);
+        VAR_BUFF[i] = nullptr;
+    }
+    free(VAR_BUFF);
+    VAR_BUFF = nullptr;
+
+    free(DOTS_BUFF);
+    DOTS_BUFF = nullptr;
+
+    printf("Text + tree are destructed\n");
 }
 
 
@@ -71,9 +133,8 @@ int get_tokens(text_t* text)
     POS = 0;
 
     for (unsigned int i = 0; i < LINES_CNT; i++)
-    {
         if (tokenize_line(text, i)) return 1;
-    }
+
     return 0;
 }
 
@@ -103,18 +164,12 @@ int get_word(text_t* text, unsigned int i)
 
     static unsigned int word_number = 0;
 
-    //printf("cock%u\n", i);
-    //printf("\n%s\n", TEXT_LINES[i] + POS);
-
     if (*(TEXT_LINES[i] + POS) == 0) return 0;
 
     unsigned initial_pos = POS;
 
-    while (isgraph(*(TEXT_LINES[i] + POS)) && *(TEXT_LINES[i] + POS) && *(TEXT_LINES[i] + POS) != '.')
-    {
-        //printf("%c", *(TEXT_LINES[i] + POS));
+    while (isgraph(*(TEXT_LINES[i] + POS)) && *(TEXT_LINES[i] + POS) && *(TEXT_LINES[i] + POS) != '$')
         POS++;
-    }
 
     unsigned len = POS - initial_pos;
     if (len > MAX_WORD_LEN)
@@ -123,10 +178,8 @@ int get_word(text_t* text, unsigned int i)
         return 1;
     }
 
-
     if (len)
     {
-        //printf("word number - %u\n", word_number);
         TOKEN_BUFF[word_number]       = (token_t*) calloc(1, sizeof(token_t));
         TOKEN_BUFF[word_number]->word = (char*) calloc(MAX_WORD_LEN+1, sizeof(char));
         TOKEN_BUFF[word_number]->line = i+1;
@@ -139,13 +192,11 @@ int get_word(text_t* text, unsigned int i)
         word_number++;
     }
 
-    if (*(TEXT_LINES[i] + POS) == '.')
+    if (*(TEXT_LINES[i] + POS) == '$')
     {
         len = 1;
         initial_pos = POS;
 
-        //printf("\n%s\n", TEXT_LINES[i] + POS);
-        //printf("word number - %u\n", word_number);
         POS++;
 
         TOKEN_BUFF[word_number]       = (token_t*) calloc(1, sizeof(token_t));
@@ -168,14 +219,11 @@ int get_num_of_words(text_t* text)
     ASSERT(text);
     ASSERT(TEXT_BUFF);
 
-    //printf("%u\n", TEXT_LEN);
     for (unsigned i = 0; i < TEXT_LEN; i++)
     {
-        //printf("%u\n", i);
-        if (isgraph(TEXT_BUFF[i]) && (!isgraph(TEXT_BUFF[i+1]) || TEXT_BUFF[i+1] == '.')) WORDS_CNT++;
-        if (TEXT_BUFF[i] == '.' && isgraph(TEXT_BUFF[i+1])) WORDS_CNT++;
+        if (isgraph(TEXT_BUFF[i]) && (!isgraph(TEXT_BUFF[i+1]) || TEXT_BUFF[i+1] == '$')) WORDS_CNT++;
+        if (TEXT_BUFF[i] == '$' && isgraph(TEXT_BUFF[i+1])) WORDS_CNT++;
     }
-    //printf("wc - %u\n", WORDS_CNT);
 
     return 0;
 }
@@ -223,32 +271,5 @@ int get_num_of_lines(text_t* text)
         }
     }
     LINES_CNT++;
-    return 0;
-}
-
-
-int text_dtor(text_t* text)
-{
-    ASSERT(text);
-
-    tree_free(text->tree_root);
-
-    free(TEXT_BUFF);
-    free(TEXT_LINES);
-    free(TOKEN_BUFF);
-
-    for (unsigned i = 0; i < text->func_cnt; i++) free(text->func_names[i]);
-    free(text->func_names);
-
-    for (unsigned i = 0; i < text->var_cnt; i++)
-    {
-        printf("%u) %s - %lg\n", i, text->var_buff[i]->name, text->var_buff[i]->value);
-        free(text->var_buff[i]->name);
-        free(text->var_buff[i]);
-    }
-    free(text->var_buff);
-
-    printf("Text struct + tree are destructed\n");
-
     return 0;
 }

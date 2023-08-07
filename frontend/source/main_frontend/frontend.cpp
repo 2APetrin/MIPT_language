@@ -54,7 +54,7 @@ token_type get_tok_type(const char* word)
     if (!strcmp(word, "*"))               return OP_MUL;
     if (!strcmp(word, "/"))               return OP_DIV;
 
-    if (!strcmp(word, "."))               return TYPE_DOT;
+    if (!strcmp(word, "$"))               return TYPE_DOT;
 
     if (!strcmp(word, "enter_mipt"))      return TYPE_O_BRCKT;
     if (!strcmp(word, "get_sent_down"))   return TYPE_C_BRCKT;
@@ -160,7 +160,7 @@ int number_check(const char* word)
     unsigned i = 0;
     while (word[i])
     {
-        if (!isdigit(word[i])) return 0;
+        if (!isdigit(word[i]) && word[i] != '.') return 0;
         i++;
     }
 

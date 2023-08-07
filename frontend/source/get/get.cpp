@@ -1,12 +1,18 @@
 #include "get.h"
 #include "../main_frontend/frontend.h"
 #include "../tree/log_tree.h"
+#include "../../../file_work/file_work.h"
+
+FILE* log_file;
 
 
 token_t* get_general(text_t* text)
 {
     ASSERT(text);
     POS = 0;
+
+    open_write_file("frontend/logs/frontend_log.html", &log_file);
+    fprintf(log_file, "<html>\n");
 
     token_t* temp = get_def_function(text);
     token_t* curr = temp;
@@ -22,14 +28,19 @@ token_t* get_general(text_t* text)
 
     token_t* main_block = get_start(text);
 
-    token_t* ret = create_node(TYPE_DOT, POISON);
+    token_t* ret_node = nullptr;
+    CREATE_RET_NODE();
 
-    ret->left_child    = def_tree_root;
-    ret->right_child   = main_block;
-    if (main_block) main_block->parent = ret;
-    if (def_tree_root) def_tree_root->parent = ret;
+    ret_node->left_child    = def_tree_root;
+    ret_node->right_child   = main_block;
 
-    return ret;
+    if (main_block)       main_block->parent = ret_node;
+    if (def_tree_root) def_tree_root->parent = ret_node;
+
+    fprintf(log_file, "\n</html>\n");
+    fclose(log_file);
+
+    return ret_node;
 }
 
 
@@ -39,35 +50,26 @@ token_t* get_start(text_t* text)
 
     if (TOKEN_BUFF[POS]->type == TYPE_START) FREE()
     else
-    {
-        printf("error in get start. Start (born) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in get start. Start (born) is missing");
 
     if (TOKEN_BUFF[POS]->type == TYPE_O_BRCKT) FREE()
     else
-    {
-        printf("error in get start. Open bracket (enter_mipt) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in get start. Open bracket (enter_mipt) is missing");
 
     token_t* ret = get_comp(text);
 
     if (TOKEN_BUFF[POS]->type == TYPE_C_BRCKT) FREE()
     else
-    {
-        printf("error in get start. Close bracket (get_sent_down) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in get start. Close bracket (enter_mipt) is missing");
 
-    if (TOKEN_BUFF[POS]->type == TYPE_FINISH)
+    if (POS < WORDS_CNT && TOKEN_BUFF[POS]->type == TYPE_FINISH)
     {
         free(TOKEN_BUFF[POS]->word);
         free(TOKEN_BUFF[POS]);
     }
     else
     {
-        printf("error in get start. Finish (die) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
+        fprintf(log_file, "<pre>\nERROR in get start. Finish (die) is missing\n</pre>");
         return nullptr;
     }
 
@@ -123,24 +125,16 @@ token_t* get_loop(text_t* text)
 {
     ASSERT(text);
 
-    token_t* ret_node    = create_node(TYPE_DOT, POISON);
-    token_t* curr_node   = TOKEN_BUFF[POS];
+    token_t* curr_node  = TOKEN_BUFF[POS];
+    token_t* first_node = TOKEN_BUFF[POS];
 
-    ret_node->left_child = curr_node;
-    curr_node->parent    = ret_node;
     POS++;
-
-    //printf("1 -- Found - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
 
     token_t* logical_expr = get_expr(text);
 
-    //printf("2 -- Found - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-
     if (TOKEN_BUFF[POS]->type != TYPE_LOOP_CLOSE)
-    {
-        printf("error in loop initialization. Next node after expression isn't close loop bracket (nulevok_untill_they_run_out)\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in loop. Next node after expression isn't close loop bracket (nulevok_untill_they_run_out)");
+
     FREE();
 
     curr_node->left_child                  = logical_expr;
@@ -148,22 +142,21 @@ token_t* get_loop(text_t* text)
 
     if (TOKEN_BUFF[POS]->type == TYPE_O_BRCKT) FREE()
     else
-    {
-        printf("error in get loop. Open bracket (enter_mipt) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in loop. Open bracket (enter_mipt) is missing");
 
     token_t* right_subtree = get_comp(text);
 
     if (TOKEN_BUFF[POS]->type == TYPE_C_BRCKT) FREE()
     else
-    {
-        printf("error in get loop. Close bracket (get_sent_down) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in loop. Close bracket (get_sent_down) is missing");
 
     curr_node->right_child                   = right_subtree;
     if (right_subtree) right_subtree->parent = curr_node;
+
+    token_t* ret_node = nullptr;
+    CREATE_RET_NODE();
+    ret_node->left_child = first_node;
+    first_node->parent   = ret_node;
 
     return ret_node;
 }
@@ -173,29 +166,27 @@ token_t* get_decrease(text_t* text)
 {
     ASSERT(text);
 
-    token_t* ret_node    = create_node(TYPE_DOT, POISON);
-    token_t* curr_node   = TOKEN_BUFF[POS];
+    token_t* curr_node  = TOKEN_BUFF[POS];
+    token_t* first_node = TOKEN_BUFF[POS];
 
-    ret_node->left_child = curr_node;
-    curr_node->parent    = ret_node;
     POS++;
 
     if (TOKEN_BUFF[POS]->type != TYPE_VAR)
-    {
-        printf("error in decrease operator. Next node after solve_nulevka init isn't variable. Found - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in decrease operator. Next node after solve_nulevka init isn't variable");
 
     curr_node->left_child   = TOKEN_BUFF[POS];
     TOKEN_BUFF[POS]->parent = curr_node;
     POS++;
 
     if (TOKEN_BUFF[POS]->type != TYPE_DOT)
-    {
-        printf("error in decrease operator. Dot in the end is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in decrease operator. Dot in the end is missing");
+
     FREE();
+
+    token_t* ret_node = nullptr;
+    CREATE_RET_NODE();
+    ret_node->left_child = first_node;
+    first_node->parent   = ret_node;
 
     return ret_node;
 }
@@ -205,11 +196,8 @@ token_t* get_return(text_t* text)
 {
     ASSERT(text);
 
-    token_t* ret_node    = create_node(TYPE_DOT, POISON);
     token_t* curr_node   = TOKEN_BUFF[POS];
-
-    curr_node->parent    = ret_node;
-    ret_node->left_child = curr_node;
+    token_t* first_node  = TOKEN_BUFF[POS];
 
     POS++;
 
@@ -219,18 +207,19 @@ token_t* get_return(text_t* text)
     if (expr) expr->parent = curr_node;
 
     if (TOKEN_BUFF[POS]->type != TYPE_RETURN_BRCKT)
-    {
-        printf("error in return. Zadach in the end is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in return. Zadach in the end is missing");
+
     FREE();
 
     if (TOKEN_BUFF[POS]->type != TYPE_DOT)
-    {
-        printf("error in return. Dot in the end is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in return. Dot in the end is missing");
+
     FREE();
+
+    token_t* ret_node = nullptr;
+    CREATE_RET_NODE();
+    first_node->parent   = ret_node;
+    ret_node->left_child = first_node;
 
     return ret_node;
 }
@@ -248,8 +237,8 @@ token_t* get_variable_op(text_t* text)
     if (type == TYPE_VAR_INIT) return get_var_initialization(text);
     if (type == TYPE_VAR)
     {
-        for (unsigned i = 0; i < text->func_cnt; i++) 
-            if (!strcmp(text->func_names[i], TOKEN_BUFF[POS]->word)) return get_func_call(text);
+        for (unsigned i = 0; i < FUNC_CNT; i++) 
+            if (!strcmp(FUNC_BUFF[i]->name, TOKEN_BUFF[POS]->word)) return get_func_call(text);
 
         return get_assignment(text);
     }
@@ -264,29 +253,28 @@ token_t* get_func_call(text_t* text)
 
     TOKEN_BUFF[POS]->type = TYPE_FUNC_CALL;
 
-    token_t* ret_node    = create_node(TYPE_DOT, POISON);
-    token_t* curr_node   = TOKEN_BUFF[POS];
+    token_t* first_node = TOKEN_BUFF[POS];
 
-    ret_node->left_child = TOKEN_BUFF[POS];
-    curr_node->parent    = ret_node;
     POS++;
 
     if (TOKEN_BUFF[POS]->type != TYPE_O_F_BR)
-    {
-        printf("error in function call. Expexted (\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in function call. Expected [");
+
     FREE();
 
     token_t* temp      = nullptr;
     token_t* var_root  = nullptr;
     token_t* prev_node = nullptr;
+    unsigned var_count = 0;
 
     if (TOKEN_BUFF[POS]->type != TYPE_C_F_BR)
     {
         temp      = get_expr(text);
         var_root  = create_node(TYPE_DOT, POISON, temp, nullptr);
+        DOTS_BUFF[DOTS_CNT] = var_root;
+        DOTS_CNT++;
         prev_node = var_root;
+        var_count++;
 
         if (temp) temp->parent = prev_node;
 
@@ -295,35 +283,47 @@ token_t* get_func_call(text_t* text)
             FREE();
 
             temp = create_node(TYPE_DOT, POISON, get_expr(text), nullptr);
+            DOTS_BUFF[DOTS_CNT] = temp;
+            DOTS_CNT++;
+
             prev_node->right_child = temp;
 
             if (temp) temp->parent = prev_node;
             if (temp->left_child) temp->left_child->parent = temp;
 
             prev_node = temp;
+            var_count++;
         }
     }
 
-    if (TOKEN_BUFF[POS]->type != TYPE_C_F_BR)
+    for (unsigned i = 0; i < FUNC_CNT; i++)
     {
-        printf("error in function call. Expexted )\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
+        if (!strcmp(FUNC_BUFF[i]->name, first_node->word))
+        {
+            if (FUNC_BUFF[i]->var_cnt != var_count)
+            {
+                printf("%s has %u vars\nbut in def is has %u vars\n", first_node->word, var_count, FUNC_BUFF[i]->var_cnt);
+                GET_SYNTAX_ERROR("ERROR in function call. Number of variables des not match");
+            }
+        }
     }
+    if (TOKEN_BUFF[POS]->type != TYPE_C_F_BR)
+        GET_SYNTAX_ERROR("ERROR in function call. Expected ]");
+
     FREE();
 
-    //tree_print_dump(var_root);
+    if (TOKEN_BUFF[POS]->type != TYPE_DOT)
+        GET_SYNTAX_ERROR("ERROR in function call. Dot in the end is missing");
+
+    FREE();
+
+    token_t* ret_node = nullptr;
+    CREATE_RET_NODE();
+    first_node->parent   = ret_node;
+    ret_node->left_child = first_node;
 
     ret_node->left_child->left_child = var_root;
     if (var_root) var_root->parent = ret_node->left_child;
-
-    if (TOKEN_BUFF[POS]->type != TYPE_DOT)
-    {
-        printf("error in function call. Dot in the end is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
-    FREE();
-
-    //tree_print_dump(ret_node);
 
     return ret_node;
 }
@@ -335,48 +335,54 @@ token_t* get_var_initialization(text_t* text)
 
     if (TOKEN_BUFF[POS]->type != TYPE_VAR_INIT) return nullptr;
 
-    token_t* ret_node    = create_node(TYPE_DOT, POISON);
-    token_t* curr_node   = TOKEN_BUFF[POS];
+    token_t* curr_node  = TOKEN_BUFF[POS];
+    token_t* first_node = TOKEN_BUFF[POS];
 
-    ret_node->left_child = TOKEN_BUFF[POS];
-    curr_node->parent    = ret_node;
     POS++;
 
     if (TOKEN_BUFF[POS]->type != TYPE_VAR)
-    {
-        printf("error in get var initialization. Next node after var init isn't variable\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in var initialization. Next node after invent init isn't variable");
 
     curr_node->left_child   = TOKEN_BUFF[POS];
     TOKEN_BUFF[POS]->parent = curr_node;
 
-    text->var_buff[text->var_cnt]       = (var_t*) calloc (1, sizeof(var_t));
-    text->var_buff[text->var_cnt]->name = (char*)  calloc (MAX_WORD_LEN, sizeof(char));
-    //printf("%p %p\n", text->var_buff[text->var_cnt], text->var_buff[text->var_cnt]->name);
-    strncpy(text->var_buff[text->var_cnt]->name, TOKEN_BUFF[POS]->word, MAX_WORD_LEN-1);
+    int flag = 1;
+    unsigned var_pos = VAR_CNT;
+
+    for (unsigned i = 0; i < VAR_CNT; i++)
+        if (!strcmp(VAR_BUFF[i]->name, TOKEN_BUFF[POS]->word))
+        {
+            flag = 0;
+            var_pos = i;
+        }
+
+    if (flag)
+    {
+        VAR_BUFF[VAR_CNT]       = (var_t*) calloc (1, sizeof(var_t));
+        VAR_BUFF[VAR_CNT]->name = (char*)  calloc (MAX_WORD_LEN, sizeof(char));
+        strncpy(VAR_BUFF[VAR_CNT]->name, TOKEN_BUFF[POS]->word, MAX_WORD_LEN-1);
+        VAR_CNT++;
+    }
     POS++;
 
     if (TOKEN_BUFF[POS]->type != TYPE_NUM)
-    {
-        printf("error in get var initialization. Next node after variable isn't number\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in var initialization. Next node after invent init isn't number");
 
-    curr_node->right_child = TOKEN_BUFF[POS];
+    curr_node->right_child  = TOKEN_BUFF[POS];
     TOKEN_BUFF[POS]->parent = curr_node;
 
-    sscanf(TOKEN_BUFF[POS]->word, "%lg", &text->var_buff[text->var_cnt]->value);
+    sscanf(TOKEN_BUFF[POS]->word, "%lg", &VAR_BUFF[var_pos]->value);
     POS++;
 
     if (TOKEN_BUFF[POS]->type != TYPE_DOT)
-    {
-        printf("error in var init. Dot in the end is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in var initialization. Dot in the end is missing");
+
     FREE();
 
-    text->var_cnt++;
+    token_t* ret_node = nullptr;
+    CREATE_RET_NODE();
+    first_node->parent   = ret_node;
+    ret_node->left_child = first_node;
 
     return ret_node;
 }
@@ -384,45 +390,50 @@ token_t* get_var_initialization(text_t* text)
 
 token_t* get_assignment(text_t* text)
 {
-    token_t* ret_root   = create_node(TYPE_DOT, POISON);
-    token_t* first_node = TOKEN_BUFF[POS]; 
+    token_t* first_node = nullptr; 
+
+    for (unsigned i = 0; i < VAR_CNT; i++)
+        if (!strcmp(VAR_BUFF[i]->name, TOKEN_BUFF[POS]->word)) first_node = TOKEN_BUFF[POS];
+
+    if (!first_node)
+        GET_SYNTAX_ERROR("ERROR in assignment. No such variable exists");
+
     POS++;
 
     if (TOKEN_BUFF[POS]->type != TYPE_ASSIGNMENT)
-    {
-        printf("error in assignment. podgon_pod is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in assignment. podgon_pod is missing");
 
     token_t* middle_part    = TOKEN_BUFF[POS];
     middle_part->left_child = first_node;
     first_node->parent      = middle_part;
-    ret_root->left_child    = middle_part;
-    middle_part->parent     = ret_root;
     POS++;
 
-
     token_t* right_part = nullptr;
-    for (unsigned i = 0; i < text->func_cnt; i++) 
-        if (!strcmp(text->func_names[i], TOKEN_BUFF[POS]->word)) right_part = get_func_call(text);
+    for (unsigned i = 0; i < FUNC_CNT; i++) 
+        if (!strcmp(FUNC_BUFF[i]->name, TOKEN_BUFF[POS]->word)) right_part = get_func_call(text);
 
     if (!right_part)
     {
         right_part = get_expr(text);
 
         if (TOKEN_BUFF[POS]->type != TYPE_DOT)
-        {
-            printf("error in var assignment. Dot in the end is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-            return nullptr;
-        }
+            GET_SYNTAX_ERROR("ERROR in assignment. Dot in the end is missing");
+
         FREE();
     }
 
     middle_part->right_child           = right_part;
     if (right_part) right_part->parent = middle_part;
 
+    token_t* ret_node = nullptr;
+    CREATE_RET_NODE();
+    first_node->parent   = ret_node;
+    ret_node->left_child = first_node;
 
-    return ret_root;
+    ret_node->left_child = middle_part;
+    middle_part->parent  = ret_node;
+
+    return ret_node;
 }
 
 
@@ -436,11 +447,12 @@ token_t* get_If(text_t* text)
 
     if (TOKEN_BUFF[POS]->type != TYPE_IF) return nullptr;
 
-    token_t* ret_root    = create_node(TYPE_DOT, POISON);
+    token_t* ret_node = nullptr;
+    CREATE_RET_NODE();
     token_t* curr        = TOKEN_BUFF[POS];
-    ret_root->left_child = TOKEN_BUFF[POS];
+    ret_node->left_child = TOKEN_BUFF[POS];
 
-    TOKEN_BUFF[POS]->parent = ret_root;
+    TOKEN_BUFF[POS]->parent = ret_node;
     POS++;
 
     curr->left_child = get_logical_expr(text);
@@ -448,27 +460,18 @@ token_t* get_If(text_t* text)
 
     if (TOKEN_BUFF[POS]->type == TYPE_IF_BRCKET) FREE()
     else
-    {
-        printf("error in get if. Close bracket (togda) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in getting if. Close bracket (togda) is missing");
 
     if (TOKEN_BUFF[POS]->type == TYPE_O_BRCKT) FREE()
     else
-    {
-        printf("error in get if. Open bracket (enter_mipt) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in getting if. Open bracket (enter_mipt) is missing");
 
     token_t* if_code_tree   = get_comp(text);
     token_t* else_code_tree = nullptr;
 
     if (TOKEN_BUFF[POS]->type == TYPE_C_BRCKT) FREE()
     else
-    {
-        printf("error in get if. Close bracket (get_sent_down) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in getting if. Close bracket (get_sent_down) is missing");
 
     if (TOKEN_BUFF[POS]->type == TYPE_ELSE)
     {
@@ -477,19 +480,13 @@ token_t* get_If(text_t* text)
 
         if (TOKEN_BUFF[POS]->type == TYPE_O_BRCKT) FREE()
         else
-        {
-            printf("error in get if. Open bracket (enter_mipt) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-            return nullptr;
-        }
+            GET_SYNTAX_ERROR("ERROR in getting if. Open bracket (enter_mipt) is missing");
 
         else_code_tree = get_comp(text);
 
         if (TOKEN_BUFF[POS]->type == TYPE_C_BRCKT) FREE()
         else
-        {
-            printf("error in get if. Close bracket (enter_mipt) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-            return nullptr;
-        }
+            GET_SYNTAX_ERROR("ERROR in getting if. Close bracket (get_sent_down) is missing");
 
         curr->right_child  = else_token;
         else_token->parent = curr;
@@ -500,13 +497,13 @@ token_t* get_If(text_t* text)
         curr->right_child->right_child             = else_code_tree;
         if (else_code_tree) else_code_tree->parent = curr->right_child;
 
-        return ret_root;
+        return ret_node;
     }
 
     curr->right_child                                = if_code_tree;
     if (curr->right_child) curr->right_child->parent = curr;
 
-    return ret_root;
+    return ret_node;
 }
 
 
@@ -517,10 +514,7 @@ token_t* get_logical_expr(text_t* text)
     token_t* left_part = get_expr(text);
 
     if ((TOKEN_BUFF[POS]->type < TYPE_EQ) || (TOKEN_BUFF[POS]->type > TYPE_LESS_EQ))
-    {
-        printf("error in get logical expression. Sign is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in getting logical expression. Sign is missing");
 
     token_t* sign = TOKEN_BUFF[POS];
     POS++;
@@ -610,10 +604,8 @@ token_t* get_P(text_t* text)
         token_t* expr_root = get_expr(text);
 
         if (TOKEN_BUFF[POS]->type != TYPE_EXPR_C_BR)
-        {
-            printf("Error in get expression: expected )\nFound - %s\nline - %u\npos - %u\n.", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-            return nullptr;
-        }
+            GET_SYNTAX_ERROR("ERROR in getting expression. Expected )");
+
         FREE();
 
         return expr_root;
@@ -628,14 +620,26 @@ token_t* get_elem(text_t* text)
 {
     ASSERT(text);
 
-    if (TOKEN_BUFF[POS]->type == TYPE_NUM || TOKEN_BUFF[POS]->type == TYPE_VAR)
+    if (TOKEN_BUFF[POS]->type == TYPE_NUM)
     {
         POS++;
         return TOKEN_BUFF[POS-1];
     }
 
-    printf("Error in get expression: expected num or var\nFound - %s\nline - %u\npos - %u\n.", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-    return nullptr;
+     if (TOKEN_BUFF[POS]->type == TYPE_VAR)
+    {
+        for (unsigned i = 0; i < VAR_CNT; i++)
+        {
+            if (!strcmp(VAR_BUFF[i]->name, TOKEN_BUFF[POS]->word))
+            {
+                //printf("%s - %s\n", VAR_BUFF[i]->name, TOKEN_BUFF[POS]->word);
+                POS++;
+                return TOKEN_BUFF[POS-1];
+            }
+        }
+        GET_SYNTAX_ERROR("ERROR in getting expression. No such variable found");
+    }
+    GET_SYNTAX_ERROR("ERROR in getting expression. Expected number or variable");
 }
 
 
@@ -648,33 +652,38 @@ token_t* get_print(text_t* text)
 
     if (TOKEN_BUFF[POS]->type != TYPE_PRINT) return nullptr;
 
-    token_t* ret_root    = create_node(TYPE_DOT, POISON);
-    ret_root->left_child = TOKEN_BUFF[POS];
-
-    TOKEN_BUFF[POS]->parent = ret_root;
+    token_t* first_node = TOKEN_BUFF[POS];
     POS++;
 
     token_t* node = get_expr(text);
-    ret_root->left_child->left_child = node;
+    first_node->left_child = node;
 
-    if (node) node->parent = ret_root->left_child;
+    if (node) node->parent = first_node;
 
     if (TOKEN_BUFF[POS]->type != TYPE_PRINT_BRCKET)
-    {
-        printf("error in print. Print bracket is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in print. Print bracket is missing");
+
     FREE();
 
     if (TOKEN_BUFF[POS]->type != TYPE_DOT)
-    {
-        printf("error in print. Dot in the end is missing\nFound - %s\nline - %u\npos - %u\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in print. Dot in the end is missing");
+
     FREE();
 
-    return ret_root;
+    token_t* ret_node = nullptr;
+    CREATE_RET_NODE();
+    first_node->parent   = ret_node;
+    ret_node->left_child = first_node;
+
+    return ret_node;
 }
+
+
+#define NEW_VAR()                                                        \
+VAR_BUFF[VAR_CNT]       = (var_t*) calloc (1, sizeof(var_t));             \
+VAR_BUFF[VAR_CNT]->name = (char*)  calloc (MAX_WORD_LEN, sizeof(char));    \
+strncpy(VAR_BUFF[VAR_CNT]->name, TOKEN_BUFF[POS]->word, MAX_WORD_LEN-1);    \
+VAR_CNT++;                                                                   \
 
 
 token_t* get_def_function(text_t* text) 
@@ -685,35 +694,48 @@ token_t* get_def_function(text_t* text)
     FREE();
 
     if (TOKEN_BUFF[POS]->type != TYPE_VAR)
-    {
-        printf("error in get function def. Error in name of function\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in defining function. Error in name of function");
 
-    token_t* ret_node       = create_node(TYPE_DOT, POISON);
-
-    TOKEN_BUFF[POS]->type   = TYPE_FUNC_ID;
-
-    ret_node->left_child = TOKEN_BUFF[POS];
-    TOKEN_BUFF[POS]->parent = ret_node;
-
+    token_t* first_node  = TOKEN_BUFF[POS];
+    first_node->type     = TYPE_FUNC_ID;
     token_t* middle_node = TOKEN_BUFF[POS];
 
-    text->func_names[text->func_cnt] = (char*) calloc (MAX_WORD_LEN, sizeof(char));
-    strncpy(text->func_names[text->func_cnt], TOKEN_BUFF[POS]->word, MAX_WORD_LEN-1);
-    text->func_cnt++;
+    for (unsigned i = 0; i < FUNC_CNT; i++)
+        if (!strcmp(first_node->word, FUNC_BUFF[i]->name))
+            GET_SYNTAX_ERROR("ERROR in defining function. Multiple definition of function");
 
+    FUNC_BUFF[FUNC_CNT]       = (func_t*) calloc (1, sizeof(func_t));
+    FUNC_BUFF[FUNC_CNT]->name = (char*)   calloc (MAX_WORD_LEN, sizeof(char));
+    strncpy(FUNC_BUFF[FUNC_CNT]->name, TOKEN_BUFF[POS]->word, MAX_WORD_LEN-1);
+    FUNC_CNT++;
     POS++;
 
     if (TOKEN_BUFF[POS]->type != TYPE_O_F_BR)
-    {
-        printf("error in get function def. Error in def of function. Expexted (\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in defining function. Expexted [");
+
     FREE();
 
-    token_t* temp      = get_expr(text);
+    if (TOKEN_BUFF[POS]->type != TYPE_VAR)
+        GET_SYNTAX_ERROR("ERROR in defining function. Bed vars heheheh. word is not a variable");
+
+    token_t* temp = TOKEN_BUFF[POS];
+
+    int flag = 1;
+    for (unsigned i = 0; i < VAR_CNT; i++)
+        if (!strcmp(TOKEN_BUFF[POS]->word, VAR_BUFF[i]->name)) flag = 0;
+
+    if (flag)
+    {
+        NEW_VAR();
+    }
+
+    FUNC_BUFF[FUNC_CNT-1]->var_cnt++;
+
+    POS++;
     token_t* var_root  = create_node(TYPE_DOT, POISON, temp, nullptr);
+    DOTS_BUFF[DOTS_CNT] = var_root;
+    DOTS_CNT++;
+
     token_t* prev_node = var_root;
 
     if (temp) temp->parent = prev_node;
@@ -722,7 +744,26 @@ token_t* get_def_function(text_t* text)
     {
         FREE();
 
-        temp = create_node(TYPE_DOT, POISON, get_expr(text), nullptr);
+        if (TOKEN_BUFF[POS]->type != TYPE_VAR)
+            GET_SYNTAX_ERROR("ERROR in defining function. Bed vars heheheh. word is not a variable");
+
+        temp = create_node(TYPE_DOT, POISON, TOKEN_BUFF[POS], nullptr);
+        DOTS_BUFF[DOTS_CNT] = temp;
+        DOTS_CNT++;
+
+        flag = 1;
+        for (unsigned i = 0; i < VAR_CNT; i++)
+        {
+            if (!strcmp(TOKEN_BUFF[POS]->word, VAR_BUFF[i]->name)) flag = 0;
+        }
+
+        if (flag)
+        {
+            NEW_VAR();
+        }
+        FUNC_BUFF[FUNC_CNT-1]->var_cnt++;
+
+        POS++;
         prev_node->right_child = temp;
         if (temp) temp->parent = prev_node;
 
@@ -731,33 +772,30 @@ token_t* get_def_function(text_t* text)
     }
 
     if (TOKEN_BUFF[POS]->type != TYPE_C_F_BR)
-    {
-        printf("error in get function def. Error in def of function. Expexted )\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in defining function. Expected [");
+
     FREE();
 
     if (TOKEN_BUFF[POS]->type == TYPE_O_BRCKT) FREE()
     else
-    {
-        printf("error in get definition of func. Open bracket (enter_mipt) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in defining function. Open bracket (enter_mipt) is missing");
 
     token_t* func_code = get_comp(text);
 
     if (TOKEN_BUFF[POS]->type == TYPE_C_BRCKT) FREE()
     else
-    {
-        printf("error in get definition of func. Close bracket (get_sent_down) is missing\nFound - %s\nline - %u\npos - %u\n", get_typename_from_toktype(TOKEN_BUFF[POS]->type), TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);
-        return nullptr;
-    }
+        GET_SYNTAX_ERROR("ERROR in defining function. Close bracket (get_sent_down) is missing");
 
     middle_node->left_child  = var_root;
     if (var_root) var_root->parent = middle_node;
 
     middle_node->right_child = func_code;
     if (func_code) func_code->parent = middle_node;
+
+    token_t* ret_node = nullptr;
+    CREATE_RET_NODE();
+    ret_node->left_child = first_node;
+    first_node->parent   = ret_node;
 
     return ret_node;
 }

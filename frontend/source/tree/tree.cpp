@@ -70,7 +70,10 @@ int tree_free(token_t * node)
     }
 
     free(node->word);
+    node->word = nullptr;
+
     free(node);
+    node = nullptr;
 
     return 0;
 }
