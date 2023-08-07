@@ -12,7 +12,7 @@ token_t* create_tree_of_tokens(text_t* text)
 
     text->tree_root = get_general(text);
 
-    tree_print_dump(text->tree_root);
+    if (!text->status) tree_print_dump(text->tree_root);
 
     printf("Tree is constructed\n");
 
@@ -160,6 +160,7 @@ int number_check(const char* word)
     unsigned i = 0;
     while (word[i])
     {
+        if (!i && isdigit(word[i+1])) i++;
         if (!isdigit(word[i]) && word[i] != '.') return 0;
         i++;
     }
@@ -171,6 +172,7 @@ int number_check(const char* word)
 int write_tree_preorder(text_t* text)
 {
     ASSERT(text);
+    if (text->status) return 0;
 
     FILE* stream = nullptr;
     open_write_file("temp/ast_tree.ast", &stream);

@@ -70,6 +70,8 @@ void text_dtor(text_t* text)
     {
         printf ("ERROR in code. Nothing happened. Go see frontend_log!\n");
 
+        system("firefox frontend/logs/frontend_log.html");
+
         for (unsigned i = 0; i < DOTS_CNT; i++)
         {
             free(DOTS_BUFF[i]);

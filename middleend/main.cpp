@@ -12,13 +12,24 @@ int main(void)
         return 1;
     }
 
-    simplify_ast_subtree(&(ast_tree.ast_root));
-    simplify_ast_subtree(&(ast_tree.ast_root));
-    simplify_ast_subtree(&(ast_tree.ast_root));
+    simplify_ast_tree(&ast_tree);
+
+    if (ast_tree.status)
+    {
+        printf("ERROR in ast tree. Go and see log!\n");
+        ast_dtor(&ast_tree);
+        fprintf(ast_log_file, "\n</html>\n");
+        fclose (ast_log_file);
+        system("firefox middleend/logs/log.html");
+        return 1;
+    }
 
     ast_tree_print_dump(ast_tree.ast_root);
 
-    tree_free(ast_tree.ast_root);
-
+    //tree_free(ast_tree.ast_root);
+    //free(ast_tree.ast_buff);
+    //ast_dtor(&ast_tree);
+    fprintf(ast_log_file, "\n</html>\n");
+    fclose (ast_log_file);
     return 0;
 }

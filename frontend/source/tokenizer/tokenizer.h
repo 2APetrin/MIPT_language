@@ -172,10 +172,10 @@ typedef struct
 
     token_t** dot_tokens;
     unsigned  dot_count;
+    int       status;
 
     code_buff_t code_buff;
 
-    int       status;
 } text_t;
 
 

@@ -4,12 +4,12 @@
 
 
 //! error processing for ast_tree
-#define AST_SYNTAX_ERROR(str)                                  \
-{                                                               \
+#define AST_SYNTAX_ERROR(str)                                    \
+{                                                                 \
     fprintf(ast_log_file, "<pre>ERROR in pos %u\n", TEXT_POS + 1); \
-    fprintf(ast_log_file, str);                                   \
+    fprintf(ast_log_file, str);                                     \
     fprintf(ast_log_file, "\nfound %c</pre>\n", BUFF[TEXT_POS]);     \
-    return nullptr;                                                 \
+    return nullptr;                                                   \
 }
 
 
@@ -23,7 +23,10 @@ typedef struct
 
     token_t* ast_root;
     unsigned pos;
-} ast_tree_t;
+
+    int simplify_status;
+    int status;
+} ast_tree_t; // добавить симплифай статус и через него и цикл сделать проверку на упрощение
 
 
 extern FILE* log_file;

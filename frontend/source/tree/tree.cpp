@@ -65,15 +65,11 @@ int tree_free(token_t * node)
     if (node == nullptr)
         return 1;
 
-    if (node->left_child != nullptr)
-    {
+    if (!node->left_child)
         tree_free(node->left_child);
-    }
 
-    if (node->right_child != nullptr)
-    {
+    if (!node->right_child)
         tree_free(node->right_child);
-    }
 
     free(node->word);
     node->word = nullptr;

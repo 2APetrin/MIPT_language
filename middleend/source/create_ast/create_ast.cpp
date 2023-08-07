@@ -5,7 +5,6 @@
 
 FILE* ast_log_file;
 
-
 int read_ast_tree(ast_tree_t* tree)
 {
     ast_log_file = fopen("middleend/logs/log.html", "w");
@@ -19,14 +18,10 @@ int read_ast_tree(ast_tree_t* tree)
     if (ast_ctor(tree, "temp/ast_tree.ast")) return 1;
 
     create_ast_tree(tree);
-    printf("Tree is ready\n");
 
+    printf("Tree is ready\n");
     ast_tree_print_dump(tree->ast_root);
 
-    fprintf(ast_log_file, "\n</html>\n");
-    fclose (ast_log_file);
-
-    ast_dtor(tree);
     return 0;
 }
 
@@ -56,12 +51,13 @@ int ast_ctor(ast_tree_t* tree, const char* filename)
 
     fclose(in_stream);
 
+    tree->simplify_status = 1;
     tree->var_count = 0;
     TEXT_POS        = 0;
 
     tree->ast_root  = nullptr;
     tree->vars      = nullptr;
-
+    tree->status    = 0;
     return 0;
 }
 
@@ -70,7 +66,10 @@ int ast_dtor(ast_tree_t* tree)
 {
     ASSERT(tree);
 
+    tree_free(tree->ast_root);
+    tree->ast_root = nullptr;
     free(BUFF);
+    BUFF = nullptr;
 
     return 0;
 }

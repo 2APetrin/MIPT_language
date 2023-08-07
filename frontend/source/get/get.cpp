@@ -70,6 +70,7 @@ token_t* get_start(text_t* text)
     else
     {
         fprintf(log_file, "<pre>\nERROR in get start. Finish (die) is missing\n</pre>");
+        text->status++;
         return nullptr;
     }
 

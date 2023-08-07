@@ -6,10 +6,10 @@
 //! @brief writes error in log file and returns nullptr
 #define GET_SYNTAX_ERROR(str)                                                                                                             \
 {                                                                                                                                          \
+    text->status++;                                                                                                                            \
     fprintf(log_file, "<pre>\n");                                                                                                           \
     fprintf(log_file, str);                                                                                                                  \
     fprintf(log_file, "\nFound - %s\nline - %u\npos - %u\n</pre>\n", TOKEN_BUFF[POS]->word, TOKEN_BUFF[POS]->line, TOKEN_BUFF[POS]->pos);     \
-    text->status = COMPILE_ERROR;                                                                                                              \
     return nullptr;                                                                                                                             \
 }
 

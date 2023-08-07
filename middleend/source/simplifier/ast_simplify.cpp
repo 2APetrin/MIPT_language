@@ -3,40 +3,135 @@
 #include <math.h>
 
 
-#define AST_SIMPLIFY_ERROR() \
-{                             \
-    return NAN;                \
+#define AST_SIMPLIFY_ERROR(str)     \
+{                                    \
+    fprintf(ast_log_file, "<pre>\n"); \
+    fprintf(ast_log_file, str);        \
+    fprintf(ast_log_file, "\n</pre>\n");\
+    tree->status++;                      \
+    return 1;                             \
 }
 
 
-int simplify_ast_subtree(token_t** node)
+int simplify_ast_tree(ast_tree_t* tree)
+{
+    ASSERT(tree);
+
+    while (tree->simplify_status)
+    {
+        printf("%d\n", tree->simplify_status);
+        tree->simplify_status = 0;
+        simplify_ast_subtree(&(tree->ast_root), tree);
+    }
+
+    return 0;
+}
+
+
+#define CURR_NODE (*node)
+#define CURR_LC CURR_NODE->left_child
+#define CURR_RC CURR_NODE->right_child
+#define CURR_LC_VAL_IS(num) ((CURR_LC->type == TYPE_NUM) && (equald(CURR_LC->value, (num))))
+#define CURR_RC_VAL_IS(num) ((CURR_RC->type == TYPE_NUM) && (equald(CURR_RC->value, (num))))
+
+
+int simplify_ast_subtree(token_t** node, ast_tree_t* tree)
 {
     ASSERT(node);
 
-    if (!(*node) || (*node)->type == TYPE_NUM || (*node)->type == TYPE_VAR) return 0;
+    if (!CURR_NODE || CURR_NODE->type == TYPE_NUM || CURR_NODE->type == TYPE_VAR) return 0;
 
-    simplify_ast_subtree(&((*node)->left_child));
-    simplify_ast_subtree(&((*node)->right_child));
+    simplify_ast_subtree(&(CURR_NODE->left_child),  tree);
+    simplify_ast_subtree(&(CURR_NODE->right_child), tree);
 
-    token_t* old_node = *node;
+    token_t* old_node = CURR_NODE;
+
+    if (is_useless_dot(CURR_NODE))
+    {
+        CURR_NODE = copy_subtree(CURR_NODE->left_child);
+        tree->simplify_status++;
+
+        tree_free(old_node);
+        return 0;
+    }
 
     if (!subtree_var_check(old_node))
     {
-        *node = new_num(eval(*node));
+        CURR_NODE = new_num(eval(CURR_NODE, tree));
+        tree_free(old_node);
+        tree->simplify_status++;
+
+        return 0;
+    }
+
+    if ((CURR_NODE->type == OP_ADD || CURR_NODE->type == OP_SUB) && (CURR_LC_VAL_IS(0) || CURR_RC_VAL_IS(0)))
+    {
+        if (CURR_LC_VAL_IS(0))
+        {
+            CURR_NODE = copy_subtree(CURR_NODE->right_child);
+            tree->simplify_status++;
+            tree_free(old_node);
+
+            return 0;
+        }
+
+        CURR_NODE = copy_subtree(CURR_NODE->left_child);
+        tree->simplify_status++;
+
+        tree_free(old_node);
+        return 0;
+    }
+
+    if (CURR_NODE->type == OP_MUL && (CURR_LC_VAL_IS(0) || CURR_RC_VAL_IS(0)))
+    {
+        CURR_NODE = new_num(0);
+        tree->simplify_status++;
         tree_free(old_node);
 
         return 0;
     }
 
-    if (is_useless_dot(*node))
+    if (CURR_NODE->type == OP_MUL && (CURR_LC_VAL_IS(1) || CURR_RC_VAL_IS(1)))
     {
-        if ((*node)->parent->right_child == *node)
-            *(&((*node)->parent->right_child)) = copy_subtree((*node)->left_child);
-        else
-            *(&((*node)->parent->left_child)) = copy_subtree((*node)->left_child);
+        if (CURR_LC_VAL_IS(1))
+        {
+            CURR_NODE = copy_subtree(CURR_NODE->right_child);
+            tree->simplify_status++;
+
+            tree_free(old_node);
+            return 0;
+        }
+        CURR_NODE = copy_subtree(CURR_NODE->left_child);
+        tree->simplify_status++;
 
         tree_free(old_node);
         return 0;
+    }
+
+    if (CURR_NODE->type == OP_DIV)
+    {
+        if (CURR_RC_VAL_IS(0))
+        {
+            AST_SIMPLIFY_ERROR("ERROR in simplify. Division by zero");
+        }
+
+        if (CURR_LC_VAL_IS(0))
+        {
+            CURR_NODE = new_num(0);
+            tree->simplify_status++;
+            tree_free(old_node);
+
+            return 0;
+        }
+
+        if (CURR_RC_VAL_IS(1))
+        {
+            CURR_NODE = copy_subtree(CURR_NODE->left_child);
+            tree->simplify_status++;
+
+            tree_free(old_node);
+            return 0;
+        }
     }
 
     return 0;
@@ -50,11 +145,8 @@ int is_useless_dot(token_t* node)
     if (node->type != TYPE_DOT)
         return 0;
 
-    if (node->parent)
-    {
-        if (!node->right_child)
-            return 1;
-    }
+    if (!node->right_child)
+        return 1;
 
     return 0;
 }
@@ -86,7 +178,7 @@ token_t* copy_subtree(token_t* node)
 }
 
 
-elem_t eval(token_t* node)
+elem_t eval(token_t* node, ast_tree_t* tree)
 {
     if (!node) return NAN;
 
@@ -102,41 +194,41 @@ elem_t eval(token_t* node)
     {
         case OP_ADD:
         {
-            if (Lc && Rc) return eval(Lc) + eval(Rc);
-            AST_SIMPLIFY_ERROR();
+            if (Lc && Rc) return eval(Lc, tree) + eval(Rc, tree);
+            AST_SIMPLIFY_ERROR("ERROR in evaluation. Left or right child is nullptr");
         }
 
         case OP_SUB:
         {
-            if (Lc && Rc) return eval(Lc) - eval(Rc);
-            AST_SIMPLIFY_ERROR();
+            if (Lc && Rc) return eval(Lc, tree) - eval(Rc, tree);
+            AST_SIMPLIFY_ERROR("ERROR in evaluation. Left or right child is nullptr");
         }
 
         case OP_MUL:
         {
-            if (Lc && Rc) return eval(Lc) * eval(Rc);
-            AST_SIMPLIFY_ERROR();
+            if (Lc && Rc) return eval(Lc, tree) * eval(Rc, tree);
+            AST_SIMPLIFY_ERROR("ERROR in evaluation. Left or right child is nullptr");
         }
 
         case OP_DIV:
         {
             if (Lc && Rc)
             {
-                elem_t val_r = eval(Rc);
-                elem_t val_l = eval(Lc);
+                elem_t val_r = eval(Rc, tree);
+                elem_t val_l = eval(Lc, tree);
 
                 if (!equald(val_r, 0))
                     return (val_l / val_r);
 
-                AST_SIMPLIFY_ERROR();
+                AST_SIMPLIFY_ERROR("ERROR in evaluation. Division by zero");
             }
-            AST_SIMPLIFY_ERROR();
+            AST_SIMPLIFY_ERROR("ERROR in evaluation. Left or right child is nullptr");
         }
 
         default:
-            AST_SIMPLIFY_ERROR();
+            AST_SIMPLIFY_ERROR("ERROR in evaluation. Unknown error");
     }
-    AST_SIMPLIFY_ERROR();
+    AST_SIMPLIFY_ERROR("ERROR in evaluation. Unknown error");
 }
 
 
