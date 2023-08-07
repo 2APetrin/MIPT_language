@@ -15,7 +15,11 @@ enter_mipt
     invent x 10.05$
     invent c 11$
 
-    x podgon_pod add [ x | 1.25 ]$
+    x podgon_pod 1 + 0.5$
+    c podgon_pod 11 - 7$
+    y podgon_pod ( ( 2.5 - 1 ) * 5 ) / 5$
+
+    x podgon_pod add [ x | 3.66 * 2 ]$
     x podgon_pod mul [ x | y ]$
 
     whisper_to_the_professor x in_the_ear$

@@ -3,7 +3,7 @@
 #define TEXT_LINES text->code_buff.text_lines // pointers to first elements of lines
 #define LINES_CNT  text->code_buff.lines_cnt
 
-#define TEXT_BUFF  text->code_buff.text_buff
+#define TEXT_BUFF  text->code_buff.text_buff  // buffer with code text
 #define TEXT_LEN   text->code_buff.text_len   // number of symbols in text without 0 in the end
 
 #define TOKEN_BUFF text->token_buff           // buffer with tokens for tree (exept created in executing process)

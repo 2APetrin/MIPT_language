@@ -68,7 +68,7 @@ void text_dtor(text_t* text)
 
     if (text->status)
     {
-        printf ("\nERROR in code. Nothing happened. Go see frontend_log!\n");
+        printf ("ERROR in code. Nothing happened. Go see frontend_log!\n");
 
         for (unsigned i = 0; i < DOTS_CNT; i++)
         {

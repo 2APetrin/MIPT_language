@@ -66,3 +66,8 @@ int ast_node_print(token_t* node);
 
 
 int graphviz_add_ast_node(token_t* node);
+
+
+
+int ast_link_nodes(token_t * node1, token_t * node2);
+int ast_node_link(token_t* node);

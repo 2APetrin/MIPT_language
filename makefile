@@ -3,5 +3,5 @@ ENUM=-Wswitch-enum
 
 frontend: frontend/main.cpp frontend/source/tokenizer/tokenizer.cpp frontend/source/main_frontend/frontend.cpp frontend/source/tree/log_tree.cpp frontend/source/tree/tree.cpp frontend/source/get/get.cpp file_work/file_work.cpp
 	g++ $(FLAGS)  frontend/main.cpp frontend/source/tokenizer/tokenizer.cpp frontend/source/main_frontend/frontend.cpp frontend/source/tree/log_tree.cpp frontend/source/tree/tree.cpp frontend/source/get/get.cpp file_work/file_work.cpp -o front
-middle: middleend/main.cpp middleend/source/create_ast/create_ast.cpp file_work/file_work.cpp frontend/source/main_frontend/frontend.cpp frontend/source/tree/log_tree.cpp frontend/source/tree/tree.cpp frontend/source/get/get.cpp
-	g++ $(FLAGS) middleend/main.cpp middleend/source/create_ast/create_ast.cpp file_work/file_work.cpp frontend/source/main_frontend/frontend.cpp frontend/source/tree/log_tree.cpp frontend/source/tree/tree.cpp frontend/source/get/get.cpp -o middle
+middle: middleend/main.cpp middleend/source/create_ast/create_ast.cpp file_work/file_work.cpp frontend/source/main_frontend/frontend.cpp frontend/source/tree/log_tree.cpp frontend/source/tree/tree.cpp frontend/source/get/get.cpp middleend/source/simplifier/ast_simplify.cpp
+	g++ $(FLAGS) middleend/main.cpp middleend/source/create_ast/create_ast.cpp file_work/file_work.cpp frontend/source/main_frontend/frontend.cpp frontend/source/tree/log_tree.cpp frontend/source/tree/tree.cpp frontend/source/get/get.cpp middleend/source/simplifier/ast_simplify.cpp -o middle

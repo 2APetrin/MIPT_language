@@ -5,10 +5,9 @@
 
 FILE* ast_log_file;
 
-int read_ast_tree(void)
-{
-    ast_tree_t ast_tree = {0};
 
+int read_ast_tree(ast_tree_t* tree)
+{
     ast_log_file = fopen("middleend/logs/log.html", "w");
     if (!ast_log_file)
     {
@@ -17,25 +16,25 @@ int read_ast_tree(void)
     }
     fprintf(ast_log_file, "<html>\n");
 
-    if (ast_ctor(&ast_tree, "temp/ast_tree.ast")) return 1;
+    if (ast_ctor(tree, "temp/ast_tree.ast")) return 1;
 
-    create_ast_tree(&ast_tree);
+    create_ast_tree(tree);
     printf("Tree is ready\n");
 
-    ast_tree_print_dump(ast_tree.ast_root);
+    ast_tree_print_dump(tree->ast_root);
 
     fprintf(ast_log_file, "\n</html>\n");
     fclose (ast_log_file);
 
-    tree_free(ast_tree.ast_root);
-
+    ast_dtor(tree);
     return 0;
 }
 
 
 #define BUFF  tree->ast_buff // tree text buffer
 #define LEN   tree->len      // length of tree text buffer
-#define T_POS tree->pos
+#define TEXT_POS tree->pos
+
 
 int ast_ctor(ast_tree_t* tree, const char* filename)
 {
@@ -58,10 +57,20 @@ int ast_ctor(ast_tree_t* tree, const char* filename)
     fclose(in_stream);
 
     tree->var_count = 0;
-    T_POS       = 0;
+    TEXT_POS        = 0;
 
     tree->ast_root  = nullptr;
     tree->vars      = nullptr;
+
+    return 0;
+}
+
+
+int ast_dtor(ast_tree_t* tree)
+{
+    ASSERT(tree);
+
+    free(BUFF);
 
     return 0;
 }
@@ -79,43 +88,35 @@ int create_ast_tree(ast_tree_t* tree)
 
 token_t* get_module(ast_tree_t* tree)
 {
-    if (BUFF[T_POS] != '(')
+    if (BUFF[TEXT_POS] != '(')
     {
-        //fprintf(ast_log_file, "<pre>error in pos %u. module. Expected (, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
+        //fprintf(ast_log_file, "<pre>error in pos %u. module. Expected (, found %c</pre>\n", TEXT_POS + 1, BUFF[TEXT_POS]);
         return nullptr;
     }
-    T_POS++;
+    TEXT_POS++;
 
     int cmd     = 0;
     int cmd_len = 0;
 
-    if (!sscanf(BUFF + T_POS, "%d%n", &cmd, &cmd_len))
-    {
-        fprintf(ast_log_file, "<pre>error in pos %u. Expected command, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-        return nullptr;
-    }
+    if (!sscanf(BUFF + TEXT_POS, "%d%n", &cmd, &cmd_len))
+        AST_SYNTAX_ERROR("Expected command");
 
-    T_POS += (unsigned) cmd_len;
+    TEXT_POS += (unsigned) cmd_len;
 
     switch (cmd)
     {
         case TYPE_DOT:
         {
             token_t* left_node  = get_module(tree);
-            if (!left_node)
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u. Expected ( (left module), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
+            if (!left_node) 
+                AST_SYNTAX_ERROR("(type dot) Expected (");
 
             token_t* right_node = get_module(tree);
 
-            if (BUFF[T_POS] != ')')
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u. Expected ) (right module), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
-            T_POS++;
+            if (BUFF[TEXT_POS] != ')')
+                AST_SYNTAX_ERROR("(type dot) Expected )");
+
+            TEXT_POS++;
 
             return create_node(TYPE_DOT, POISON, left_node, right_node);
         }
@@ -127,52 +128,39 @@ token_t* get_module(ast_tree_t* tree)
             //printf("entered type print\n"); 
             token_t* left_node = get_module(tree);
             if (!left_node)
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u (print). Expected (, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
+                AST_SYNTAX_ERROR("(type decrease/return/print) Expected (");
 
-            if (BUFF[T_POS] != ')')
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u (print). Expected ), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
-            T_POS++;
+            if (BUFF[TEXT_POS] != ')')
+                AST_SYNTAX_ERROR("(type decrease/return/print) Expected )");
+
+            TEXT_POS++;
 
             token_t* ret = create_node((token_type) cmd, POISON, left_node, nullptr);
-
-            //printf("print ptr - %p\n", ret);
 
             return ret;
         }
 
         case TYPE_NUM:
         {
-            if (BUFF[T_POS] != ':')
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u. Expected :, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
-            T_POS++;
+            if (BUFF[TEXT_POS] != ':')
+                AST_SYNTAX_ERROR("(type num) Expected :");
+
+            TEXT_POS++;
 
             elem_t num  = 0;
             int num_len = 0;
 
-            sscanf(BUFF + T_POS, "%lg%n", &num, &num_len);
+            sscanf(BUFF + TEXT_POS, "%lg%n", &num, &num_len);
 
             if (!num_len)
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u. Expected number, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
-            T_POS += (unsigned) num_len;
+                AST_SYNTAX_ERROR("(type num) Expected number");
 
-            if (BUFF[T_POS] != ')')
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u. Expected ) (num), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
-            T_POS++;
+            TEXT_POS += (unsigned) num_len;
+
+            if (BUFF[TEXT_POS] != ')')
+                AST_SYNTAX_ERROR("(type num) Expected )");
+
+            TEXT_POS++;
 
             token_t* ret = create_node(TYPE_NUM, num, nullptr, nullptr);
 
@@ -181,23 +169,19 @@ token_t* get_module(ast_tree_t* tree)
 
         case TYPE_FUNC_ID: // остановился тут на дописывании случаев для объявления функции и вызова функции. надо сделать чтобы после имени функции возможно шли скобки открывающиеся
         {
-            if (BUFF[T_POS] != ':')
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u. Expected :, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
-            T_POS++;
+            if (BUFF[TEXT_POS] != ':')
+                AST_SYNTAX_ERROR("(type def function) Expected :");
+
+            TEXT_POS++;
 
             char word[MAX_WORD_LEN] = {0};
             int  len = 0;
 
-            sscanf(BUFF + T_POS, "%127[_a-z]%n", word, &len);
+            sscanf(BUFF + TEXT_POS, "%127[_a-z]%n", word, &len);
             if (!len)
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u. Expected var, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
-            T_POS += (unsigned) len;
+                AST_SYNTAX_ERROR("(type def function) Expected variable");
+
+            TEXT_POS += (unsigned) len;
 
             token_t* var_root  = get_module(tree);
             token_t* code_node = get_module(tree);
@@ -210,35 +194,29 @@ token_t* get_module(ast_tree_t* tree)
 
             strncpy(ret->word, word, MAX_WORD_LEN-1);
 
-            if (BUFF[T_POS] != ')')
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u. Expected ) (var), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
-            T_POS++;
+            if (BUFF[TEXT_POS] != ')')
+                AST_SYNTAX_ERROR("(type def function) Expected )");
+
+            TEXT_POS++;
 
             return ret;
         }
 
         case TYPE_FUNC_CALL:
         {
-            if (BUFF[T_POS] != ':')
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u. Expected :, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
-            T_POS++;
+            if (BUFF[TEXT_POS] != ':')
+                AST_SYNTAX_ERROR("(type func call) Expected :");
+
+            TEXT_POS++;
 
             char word[MAX_WORD_LEN] = {0};
             int  len = 0;
 
-            sscanf(BUFF + T_POS, "%127[_a-z]%n", word, &len);
+            sscanf(BUFF + TEXT_POS, "%127[_a-z]%n", word, &len);
             if (!len)
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u. Expected var, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
-            T_POS += (unsigned) len;
+                AST_SYNTAX_ERROR("(type func call) Expected variable");
+
+            TEXT_POS += (unsigned) len;
 
             token_t* var_root  = get_module(tree);
 
@@ -246,42 +224,34 @@ token_t* get_module(ast_tree_t* tree)
             ret->word       = (char*) calloc (MAX_WORD_LEN, sizeof(char));
             strncpy(ret->word, word, MAX_WORD_LEN-1);
 
-            if (BUFF[T_POS] != ')')
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u. Expected ) (var), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
-            T_POS++;
+            if (BUFF[TEXT_POS] != ')')
+                AST_SYNTAX_ERROR("(type func call) Expected )");
+
+            TEXT_POS++;
 
             return ret;
         }
 
         case TYPE_VAR:
         {
-            if (BUFF[T_POS] != ':')
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u. Expected :, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
-            T_POS++;
+            if (BUFF[TEXT_POS] != ':')
+                AST_SYNTAX_ERROR("(type variable) Expected :");
+
+            TEXT_POS++;
 
             char word[MAX_WORD_LEN] = {0};
             int  len = 0;
 
-            sscanf(BUFF + T_POS, "%127[_a-z]%n", word, &len);
+            sscanf(BUFF + TEXT_POS, "%127[_a-z]%n", word, &len);
             if (!len)
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u. Expected var, found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
-            T_POS += (unsigned) len;
+                AST_SYNTAX_ERROR("(type variable) Expected variable");
 
-            if (BUFF[T_POS] != ')')
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u. Expected ) (var), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
-            T_POS++;
+            TEXT_POS += (unsigned) len;
+
+            if (BUFF[TEXT_POS] != ')')
+                AST_SYNTAX_ERROR("(type variable) Expected )");
+
+            TEXT_POS++;
 
             token_t* ret = create_node(TYPE_VAR, POISON, nullptr, nullptr);
             ret->word = (char*) calloc (MAX_WORD_LEN, sizeof(char));
@@ -298,12 +268,10 @@ token_t* get_module(ast_tree_t* tree)
             token_t* right_node = get_module(tree);
             if (!right_node) return nullptr;
 
-            if (BUFF[T_POS] != ')')
-            {
-                fprintf(ast_log_file, "<pre>error in pos %u. Expected ), found %c</pre>\n", T_POS + 1, BUFF[T_POS]);
-                return nullptr;
-            }
-            T_POS++;
+            if (BUFF[TEXT_POS] != ')')
+                AST_SYNTAX_ERROR("(type default) Expected )");
+
+            TEXT_POS++;
 
             token_t* ret = create_node((token_type) cmd, POISON, left_node, right_node);
             return ret;
@@ -311,5 +279,3 @@ token_t* get_module(ast_tree_t* tree)
     }
     return nullptr;
 }
-
-

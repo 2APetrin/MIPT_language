@@ -95,6 +95,19 @@ int link_nodes(token_t * node1, token_t * node2)
 }
 
 
+int ast_link_nodes(token_t * node1, token_t * node2)
+{
+    ASSERT(node1);
+    ASSERT(node2);
+    ASSERT(graphviz_file);
+
+    if (node2 == node1->right_child) fprintf(graphviz_file, "    node_%p->node_%p [color = \"#1164B4\"];\n", node1, node2);
+    if (node2 == node1->left_child)  fprintf(graphviz_file, "    node_%p->node_%p [color = \"#E32636\"];\n", node1, node2);
+
+    return 0;
+}
+
+
 int node_link(token_t* node)
 {
     if (node == nullptr)
@@ -110,6 +123,27 @@ int node_link(token_t* node)
     {
         link_nodes(node, node->right_child);
         node_link(node->right_child);
+    }
+
+    return 0;
+}
+
+
+int ast_node_link(token_t* node)
+{
+    if (node == nullptr)
+        return 1;
+
+    if (node->left_child != nullptr)
+    {
+        ast_link_nodes(node, node->left_child);
+        ast_node_link(node->left_child);
+    }
+
+    if (node->right_child != nullptr)
+    {
+        ast_link_nodes(node, node->right_child);
+        ast_node_link(node->right_child);
     }
 
     return 0;
@@ -170,7 +204,7 @@ int ast_tree_print_dump(token_t* root)
     init_graphviz_file();
 
     ast_node_print(root);
-    node_link(root);
+    ast_node_link(root);
 
     close_graphviz_file();
 
