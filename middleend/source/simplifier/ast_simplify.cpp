@@ -77,8 +77,8 @@ int simplify_ast_subtree(token_t** node, ast_tree_t* tree)
 
         CURR_NODE = copy_subtree(CURR_NODE->left_child);
         tree->simplify_status++;
-
         tree_free(old_node);
+
         return 0;
     }
 

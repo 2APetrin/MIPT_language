@@ -9,8 +9,13 @@
     fprintf(ast_log_file, "<pre>ERROR in pos %u\n", TEXT_POS + 1); \
     fprintf(ast_log_file, str);                                     \
     fprintf(ast_log_file, "\nfound %c</pre>\n", BUFF[TEXT_POS]);     \
-    return nullptr;                                                   \
+    tree->status++;                                                   \
+    return nullptr;                                                    \
 }
+
+#define BUFF  tree->ast_buff // tree text buffer
+#define LEN   tree->len      // length of tree text buffer
+#define TEXT_POS tree->pos
 
 
 typedef struct

@@ -60,16 +60,13 @@ token_t* create_node(token_type type, elem_t value, token_t* l_node, token_t* r_
 }
 
 
-int tree_free(token_t * node)
+int tree_free(token_t* node)
 {
     if (node == nullptr)
         return 1;
 
-    if (!node->left_child)
-        tree_free(node->left_child);
-
-    if (!node->right_child)
-        tree_free(node->right_child);
+    tree_free(node->left_child);
+    tree_free(node->right_child);
 
     free(node->word);
     node->word = nullptr;

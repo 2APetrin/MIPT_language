@@ -28,7 +28,7 @@ int main(void)
 
     //tree_free(ast_tree.ast_root);
     //free(ast_tree.ast_buff);
-    //ast_dtor(&ast_tree);
+    ast_dtor(&ast_tree);
     fprintf(ast_log_file, "\n</html>\n");
     fclose (ast_log_file);
     return 0;

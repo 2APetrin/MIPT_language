@@ -26,11 +26,6 @@ int read_ast_tree(ast_tree_t* tree)
 }
 
 
-#define BUFF  tree->ast_buff // tree text buffer
-#define LEN   tree->len      // length of tree text buffer
-#define TEXT_POS tree->pos
-
-
 int ast_ctor(ast_tree_t* tree, const char* filename)
 {
     ASSERT(tree);
@@ -194,7 +189,10 @@ token_t* get_module(ast_tree_t* tree)
             strncpy(ret->word, word, MAX_WORD_LEN-1);
 
             if (BUFF[TEXT_POS] != ')')
+            {
+                tree_free(ret);
                 AST_SYNTAX_ERROR("(type def function) Expected )");
+            }
 
             TEXT_POS++;
 
@@ -224,7 +222,10 @@ token_t* get_module(ast_tree_t* tree)
             strncpy(ret->word, word, MAX_WORD_LEN-1);
 
             if (BUFF[TEXT_POS] != ')')
+            {
+                tree_free(ret);
                 AST_SYNTAX_ERROR("(type func call) Expected )");
+            }
 
             TEXT_POS++;
 
