@@ -1,4 +1,5 @@
 #include "source/simplifier/ast_simplify.h"
+#include "source/ast_to_assembly/ast_to_assembly.h"
 #include "../frontend/source/tree/tree.h"
 #include "../frontend/source/tree/log_tree.h"
 
@@ -26,8 +27,8 @@ int main(void)
 
     ast_tree_print_dump(ast_tree.ast_root);
 
-    //tree_free(ast_tree.ast_root);
-    //free(ast_tree.ast_buff);
+    ast_to_assembly_converter(&ast_tree);
+
     ast_dtor(&ast_tree);
     fprintf(ast_log_file, "\n</html>\n");
     fclose (ast_log_file);

@@ -1,0 +1,31 @@
+
+-----------------------------------------------------------------------
+   DUMP
+ was called:
+
+int stack_dtor(my_stack_t*),
+Reason - Entry into function
+
+
+file - backend/source/cpu/stack.cpp,
+line - 108
+
+   Stack info:
+element amount = 0
+stack capacity = 8
+pointer to data - 0x603000000040
+ [ 1] - 0
+ [ 2] - 0
+ [ 3] - 0
+ [ 4] - 0
+ [ 5] - 0
+ [ 6] - 0
+ [ 7] - 0
+ [ 8] - 0
+
+   Variable info:
+variable name - &(cpu->stack)
+creation file - backend/source/cpu/cpu.cpp
+creation func - int cpu_ctor(cpu_t*)
+creation line - 31
+-----------------------------------------------------------------------

@@ -1,21 +1,10 @@
-skill_to add [ a | b ]
+skill_to v123123 [ neud ]
 enter_mipt
-    hand_in a + b zadach$
-get_sent_down
-
-skill_to mul [ c | b ]
-enter_mipt
-    hand_in a * b zadach$
 get_sent_down
 
 born
 enter_mipt
-    invent x -2$
-
-    x podgon_pod x + 0$
-    x podgon_pod 0 + ( x - 0 ) + ( x / 2 ) * 0$
-    x podgon_pod 0 - ( x * 1 )$
-    x podgon_pod x / 1 - 0$
+    whisper_to_the_professor 1 + -1.1 * 1.1 in_the_ear$
 
 get_sent_down
 die
