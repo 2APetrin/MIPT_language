@@ -4,10 +4,12 @@
 int main(void)
 {
     FILE* codefile = nullptr;
-    open_read_file("temp/ass_code.asm", &codefile);
+    FILE* outfile  = nullptr;
 
-    asm_t* assembly = (asm_t*) calloc(1, sizeof(asm_t));
-    asm_ctor(assembly, codefile);
+    open_read_file ("temp/ass_code.asm", &codefile);
+    open_write_file("temp/prog.exe", &outfile);
+
+    run_asm(codefile, outfile);
 
     return 0;
 }

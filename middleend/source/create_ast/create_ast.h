@@ -31,7 +31,7 @@ typedef struct
 
     int simplify_status;
     int status;
-} ast_tree_t; // добавить симплифай статус и через него и цикл сделать проверку на упрощение
+} ast_tree_t;
 
 
 extern FILE* log_file;

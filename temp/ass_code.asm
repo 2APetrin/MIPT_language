@@ -1,9 +1,5 @@
-:lol
-push [1]
+# Programm is written in mipt languege
+# Which is created by Petrin Anton MIPT 1 course
+
 out
 hlt
-
-:1
-    push 1
-    out
-    jmp :lol

@@ -8,6 +8,7 @@ int ast_to_assembly_converter(ast_tree_t* tree)
 
     FILE* stream = nullptr;
     open_write_file("temp/ass_code.asm", &stream);
+    fprintf(stream, "# Programm is written in mipt languege\n# Which is created by Petrin Anton MIPT 1 course\n\n");
 
     subtree_to_assembly(tree->ast_root, stream);
 
