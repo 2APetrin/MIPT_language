@@ -30,7 +30,7 @@ int text_ctor(const char* codefile_name, text_t* text)
     fread(TEXT_BUFF, sizeof(char), TEXT_LEN, code_file);
     TEXT_BUFF[TEXT_LEN] = '\0';
 
-    get_num_of_lines(text);   // puts 0 instead of \n
+    get_num_of_lines(text);
 
     TEXT_LINES = (char**) calloc(LINES_CNT, sizeof(char*));
     if (!TEXT_LINES) return 1;
@@ -123,7 +123,7 @@ void text_dtor(text_t* text)
     free(DOTS_BUFF);
     DOTS_BUFF = nullptr;
 
-    printf("Text + tree are destructed\n");
+    printf("Local codetree is destructed\n\n");
 }
 
 

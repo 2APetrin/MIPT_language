@@ -1,0 +1,29 @@
+skill_to fact [ num ]
+enter_mipt
+    when num <- 0 togda
+    enter_mipt
+        hand_in 1 zadach$
+    get_sent_down
+
+    invent num_temp 0$
+    num_temp podgon_pod num - 1$
+
+    invent fact_temp 0$
+
+    fact_temp podgon_pod fact [ num_temp ]$
+    fact_temp podgon_pod fact_temp * ( num_temp + 1 ) $
+
+    hand_in fact_temp zadach$
+get_sent_down
+
+
+born
+enter_mipt
+    invent x 0$
+    take_note x$
+
+    x podgon_pod fact [ x ]$
+
+    whisper_to_the_professor x in_the_ear$
+get_sent_down
+die

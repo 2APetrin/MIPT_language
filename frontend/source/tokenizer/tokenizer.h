@@ -103,27 +103,36 @@ enum token_type
     TYPE_IF_BRCKET    = 20,
 
     TYPE_EQ           = 21,
-    TYPE_GREATER      = 22,
-    TYPE_GREATER_EQ   = 23,
-    TYPE_LESS         = 24,
-    TYPE_LESS_EQ      = 25,
+    TYPE_NEQ          = 22,
+    TYPE_GREATER      = 23,
+    TYPE_GREATER_EQ   = 24,
+    TYPE_LESS         = 25,
+    TYPE_LESS_EQ      = 26,
 
-    TYPE_EXPR_O_BR    = 26,
-    TYPE_EXPR_C_BR    = 27,
+    TYPE_EXPR_O_BR    = 27,
+    TYPE_EXPR_C_BR    = 28,
 
-    TYPE_LOOP_FIRST   = 28,
-    TYPE_LOOP_CLOSE   = 29,
+    TYPE_LOOP_FIRST   = 29,
+    TYPE_LOOP_CLOSE   = 30,
 
-    TYPE_DECREASE     = 30,
-    TYPE_FUNC_ID      = 31,
+    TYPE_DECREASE     = 31,
+    TYPE_FUNC_ID      = 32,
 
-    TYPE_RETURN       = 32,
-    TYPE_RETURN_BRCKT = 33,
-    TYPE_FUNC_CALL    = 34,
-    TYPE_VAR_SEPARATE = 35,
+    TYPE_RETURN       = 33,
+    TYPE_RETURN_BRCKT = 34,
+    TYPE_FUNC_CALL    = 35,
+    TYPE_VAR_SEPARATE = 36,
 
-    TYPE_O_F_BR       = 36,
-    TYPE_C_F_BR       = 37
+    TYPE_O_F_BR       = 37,
+    TYPE_C_F_BR       = 38,
+
+    TYPE_RETURN_VOID  = 39,
+
+    TYPE_SCANF        = 40,
+    TYPE_SQRT         = 41,
+    TYPE_SQRT_BRCKT   = 42,
+    TYPE_NROOTS       = 43,
+    TYPE_ALLNUM       = 44,
 };
 
 

@@ -11,7 +11,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-typedef int elem;
+typedef double stk_elem_t;
 
 extern FILE * logfile;
 
@@ -25,9 +25,9 @@ typedef struct
 
 typedef struct
 {
-    elem * data;
-    size_t elemAmt;
-    size_t capacity;
+    stk_elem_t* data;
+    size_t  elemAmt;
+    size_t  capacity;
 
     var_info_t stack_info;
 } my_stack_t;
@@ -57,6 +57,9 @@ enum ResizeCodes
 };
 
 
+const double EPSYLON = 0.00001;
+
+
 int    open_logfile(const char * filename);
 
 int   _stack_ctor(my_stack_t * stk, size_t cap, var_info_t info);
@@ -69,10 +72,14 @@ void   stack_dump(my_stack_t * stk, const char * func_name, const char * file_na
 
 int    stack_dtor(my_stack_t * stk);
 
-void   stack_push(my_stack_t * stk, elem val);
+void   stack_push(my_stack_t * stk, stk_elem_t val);
 
-void   stack_pop(my_stack_t * stk, elem  * var);
+void   stack_pop(my_stack_t * stk, stk_elem_t* var);
 
 int    stack_resize(int size_cmd, my_stack_t * stk);
 
 const char * get_dump_reason(int entry_reason);
+
+//! @brief checks if doubles are equal
+//!
+int equald(double val1, double val2);

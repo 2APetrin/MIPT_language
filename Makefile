@@ -5,21 +5,22 @@ ENUM  = -Wswitch-enum
 frontend_files  = frontend/main.cpp frontend/source/tokenizer/tokenizer.cpp frontend/source/main_frontend/frontend.cpp frontend/source/tree/log_tree.cpp frontend/source/tree/tree.cpp frontend/source/get/get.cpp file_work/file_work.cpp
 middleend_files = middleend/main.cpp middleend/source/create_ast/create_ast.cpp file_work/file_work.cpp frontend/source/main_frontend/frontend.cpp frontend/source/tree/log_tree.cpp frontend/source/tree/tree.cpp frontend/source/get/get.cpp middleend/source/simplifier/ast_simplify.cpp middleend/source/ast_to_assembly/ast_to_assembly.cpp
 cpu_files       = backend/main.cpp backend/source/cpu/cpu.cpp backend/source/cpu/stack.cpp file_work/file_work.cpp
-asm_files       = backend/main_asm.cpp backend/source/asm/asm.cpp file_work/file_work.cpp
 
 
-asm: $(asm_files)
-	g++ $(FLAGS) $(asm_files) -o asm
-
+mipt_language: frontend middleend backend main_mipt_language.cpp
+	g++ main_mipt_language.cpp -o mipt_language
 
 frontend: $(frontend_files)
-	g++ $(FLAGS) $(frontend_files) -o front
+	g++ $(FLAGS) $(frontend_files) -o obj/front
 
 middleend: $(middleend_files)
-	g++ $(FLAGS) $(middleend_files) -o middle
+	g++ $(FLAGS) $(middleend_files) -o obj/middle
 
 backend: $(cpu_files) backend/source/asm/asm.cpp
-	g++ $(FLAGS) $(cpu_files) backend/source/asm/asm.cpp -o back
+	g++ $(FLAGS) $(cpu_files) backend/source/asm/asm.cpp -o obj/back
+
+
+# ================ clean ================
 
 clean_obj:
 	@echo "Cleaning obj"
@@ -27,11 +28,11 @@ clean_obj:
 
 clean_temp:
 	@echo "Cleaning temp"
-	rm front middle temp/ast_tree.ast
+	rm -rf temp/*
 
 clean_img:
 	@echo "Cleaning dumps"
 	rm -rf frontend/logs/images/*
 	rm -rf middleend/logs/images/*
 
-clean: clean_temp clean_img
+clean: clean_temp clean_img clean_obj

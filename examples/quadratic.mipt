@@ -1,0 +1,71 @@
+skill_to linear_eq [ koeff_b | koeff_c ]
+enter_mipt
+    when koeff_b <-> 0 togda
+    enter_mipt
+        when koeff_c <-> 0 togda
+        enter_mipt
+            what_ugodno$
+            hand_in$
+        get_sent_down
+
+        when_nepravilno
+        enter_mipt
+            vihoda_net$
+            hand_in$
+        get_sent_down
+    get_sent_down
+
+    when_nepravilno
+    enter_mipt
+        whisper_to_the_professor -1 * koeff_c / koeff_b in_the_ear$
+        hand_in$
+    get_sent_down
+
+    hand_in$
+get_sent_down
+
+born
+enter_mipt
+    invent koeff_a 0$
+    invent koeff_b 0$
+    invent koeff_c 0$
+
+    take_note koeff_a$
+    take_note koeff_b$
+    take_note koeff_c$
+
+    when koeff_a <-> 0 togda
+    enter_mipt
+        linear_eq [ koeff_b | koeff_c ]$
+    get_sent_down
+
+    when_nepravilno
+    enter_mipt
+        invent discriminant 0$
+        discriminant podgon_pod koeff_b * koeff_b - 4 * koeff_a * koeff_c$
+
+        when discriminant < 0 togda
+        enter_mipt
+            vihoda_net$
+        get_sent_down
+
+        when_nepravilno
+        enter_mipt
+            when discriminant <-> 0 togda
+            enter_mipt
+                whisper_to_the_professor -1 * koeff_b / ( 2 * koeff_a ) in_the_ear$
+            get_sent_down
+
+            when_nepravilno
+            enter_mipt
+                discriminant podgon_pod izvlech discriminant koren$
+                whisper_to_the_professor ( -1 * koeff_b + discriminant ) / ( 2 * koeff_a ) in_the_ear$
+                whisper_to_the_professor ( -1 * koeff_b - discriminant ) / ( 2 * koeff_a ) in_the_ear$
+
+            get_sent_down
+        get_sent_down
+
+    get_sent_down
+
+get_sent_down
+die

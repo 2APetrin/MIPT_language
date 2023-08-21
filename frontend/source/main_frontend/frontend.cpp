@@ -14,7 +14,7 @@ token_t* create_tree_of_tokens(text_t* text)
 
     if (!text->status) tree_print_dump(text->tree_root);
 
-    printf("Tree is constructed\n");
+    printf("Local codetree is constructed\n");
 
     return 0;
 }
@@ -68,6 +68,7 @@ token_type get_tok_type(const char* word)
     if (!strcmp(word, "podgon_pod"))      return TYPE_ASSIGNMENT;
 
     if (!strcmp(word, "<->"))             return TYPE_EQ;
+    if (!strcmp(word, "<!>"))             return TYPE_NEQ;
     if (!strcmp(word, ">"))               return TYPE_GREATER;
     if (!strcmp(word, "->"))              return TYPE_GREATER_EQ;
     if (!strcmp(word, "<"))               return TYPE_LESS;
@@ -86,10 +87,18 @@ token_type get_tok_type(const char* word)
     if (!strcmp(word, "["))               return TYPE_O_F_BR;
     if (!strcmp(word, "]"))               return TYPE_C_F_BR;
 
+    if (!strcmp(word, "take_note"))       return TYPE_SCANF;
+
+    if (!strcmp(word, "izvlech"))         return TYPE_SQRT;
+    if (!strcmp(word, "koren"))           return TYPE_SQRT_BRCKT;
+    if (!strcmp(word, "vihoda_net"))      return TYPE_NROOTS;
+    if (!strcmp(word, "what_ugodno"))     return TYPE_ALLNUM;
+
 
     if (!strcmp(word, "nulevok_untill_they_run_out")) return TYPE_LOOP_CLOSE;
 
     if (!strcmp(word, "whisper_to_the_professor"))    return TYPE_PRINT;
+
 
     return TYPE_VAR;
 }
@@ -129,6 +138,7 @@ const char* get_typename_from_toktype(token_type type_num)
         case TYPE_GREATER_EQ:   return "gr or eq";
         case TYPE_LESS:         return "less";
         case TYPE_LESS_EQ:      return "less or eq";
+        case TYPE_NEQ:          return "!=";
 
         case TYPE_EXPR_O_BR:    return "(";
         case TYPE_EXPR_C_BR:    return ")";
@@ -147,6 +157,15 @@ const char* get_typename_from_toktype(token_type type_num)
 
         case TYPE_O_F_BR:       return "[";
         case TYPE_C_F_BR:       return "]";
+
+        case TYPE_RETURN_VOID:  return "ret void";
+
+        case TYPE_SCANF:        return "scanf";
+
+        case TYPE_SQRT:         return "sqrt";
+        case TYPE_NROOTS:       return "no roots print";
+        case TYPE_ALLNUM:       return "all num print";
+        case TYPE_SQRT_BRCKT:    return "sqrt bracket";
 
         default: return nullptr;
     }
@@ -178,6 +197,8 @@ int write_tree_preorder(text_t* text)
     open_write_file("temp/ast_tree.ast", &stream);
 
     write_subtree_preorder(text->tree_root, stream);
+
+    printf("Local codetree is written as AST tree\n");
 
     return 0;
 }

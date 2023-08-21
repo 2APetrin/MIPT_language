@@ -10,7 +10,7 @@ int _stack_ctor(my_stack_t * stk, size_t cap, var_info_t info)
 
     stk->capacity  = cap;
     stk->elemAmt   = 0;
-    stk->data      = (elem *) calloc(stk->capacity, sizeof(elem));
+    stk->data      = (stk_elem_t *) calloc(stk->capacity, sizeof(stk_elem_t));
 
     stk->stack_info = info;
 
@@ -76,7 +76,7 @@ void stack_dump(my_stack_t * stk, const char * func_name, const char * file_name
         if (i < stk->elemAmt)
             ch = '*';
 
-        fprintf(logfile, "%c[%2lu] - %d\n", ch, (i + 1), stk->data[i]);
+        fprintf(logfile, "%c[%2lu] - %lg\n", ch, (i + 1), stk->data[i]);
     }
 
     fprintf(logfile, "\n   Variable info:\n");
@@ -121,7 +121,7 @@ int stack_dtor(my_stack_t * stk)
     return 0;
 }
 
-void stack_push(my_stack_t * stk, elem val)
+void stack_push(my_stack_t * stk, stk_elem_t val)
 {
     stack_check(stk);
     stack_dump(stk, LOCATION, DUMP_ENTRY);
@@ -142,7 +142,7 @@ void stack_push(my_stack_t * stk, elem val)
     stack_dump(stk, LOCATION, DUMP_EXITING);
 }
 
-void stack_pop(my_stack_t * stk, int * var)
+void stack_pop(my_stack_t* stk, stk_elem_t* var)
 {
     stack_check(stk);
     stack_dump(stk, LOCATION, DUMP_ENTRY);
@@ -179,7 +179,7 @@ int stack_resize(int size_cmd, my_stack_t * stk)
 
     if (size_cmd)
     {
-        stk->data = (elem *) realloc(stk->data, stk->capacity * 2 * sizeof(elem));
+        stk->data = (stk_elem_t *) realloc(stk->data, stk->capacity * 2 * sizeof(stk_elem_t));
         stk->capacity *=2;
         for (size_t i = stk->elemAmt; i < stk->capacity; i++)
         {
@@ -188,12 +188,23 @@ int stack_resize(int size_cmd, my_stack_t * stk)
     }
     else
     {
-        stk->data = (elem *) realloc(stk->data, stk->capacity / 2 * sizeof(elem));
+        stk->data = (stk_elem_t *) realloc(stk->data, stk->capacity / 2 * sizeof(stk_elem_t));
         stk->capacity /= 2;
     }
 
     stack_check(stk);
     stack_dump(stk, LOCATION, DUMP_EXITING);
 
+    return 0;
+}
+
+
+int equald(double val1, double val2)
+{
+    if (!isfinite(val1)) return 0;
+    if (!isfinite(val2)) return 0;
+
+    if (val2 - val1 < EPSYLON && val2 - val1 > -1 * EPSYLON)
+        return 1;
     return 0;
 }

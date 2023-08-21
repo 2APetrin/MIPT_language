@@ -19,10 +19,11 @@ int simplify_ast_tree(ast_tree_t* tree)
 
     while (tree->simplify_status)
     {
-        printf("%d\n", tree->simplify_status);
         tree->simplify_status = 0;
         simplify_ast_subtree(&(tree->ast_root), tree);
     }
+
+    printf("AST tree is simplified\n");
 
     return 0;
 }

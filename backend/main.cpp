@@ -9,7 +9,7 @@ int main(void)
 {
     FILE * input_file  = nullptr;
     FILE * output_file = nullptr;
-    open_read_file ("temp/ass_code.asm", &input_file);
+    if (open_read_file ("temp/ass_code.asm", &input_file)) return 1;
     open_write_file("temp/file.exe", &output_file);
 
     open_write_file("backend/logs/backend_log.txt", &logfile);
@@ -18,10 +18,9 @@ int main(void)
 
     FILE* codefile = nullptr;
     open_read_file("temp/file.exe", &codefile);
+
     if (run_cpu(codefile))
-    {
         printf("Execution failed\n");
-    }
 
     fclose(logfile);
     return 0;

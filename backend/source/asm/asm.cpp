@@ -92,7 +92,11 @@ int write_exe_array(asm_t* assembly, FILE* out_stream)
 {
     ASSERT(assembly);
     ASSERT(out_stream);
-    ASSERT(!assembly->status);
+    if (assembly->status)
+    {
+        fclose(out_stream);
+        ASSERT(!assembly->status);
+    }
 
     OUT_BUFF = (elem_t*) calloc (OUT_BUFF_LEN, sizeof(elem_t));
 
@@ -114,16 +118,18 @@ int write_exe_array(asm_t* assembly, FILE* out_stream)
         OUT_BUFF[i++] = (elem_t) TOKEN_BUFF[POS].cmd;
     }
 
-    printf("Отладка:\n");
-    for (unsigned m = 0; m < OUT_BUFF_LEN; m++) printf("%2u ", m);
+    /* printf("Debug:\n");
+    for (unsigned m = 0; m < OUT_BUFF_LEN; m++) printf("%3u ", m);
     printf("\n");
     for (unsigned m = 0; m < OUT_BUFF_LEN; m++)
-        printf("%2lg ", OUT_BUFF[m]);
-    printf("\n");
+        printf("%3lg ", OUT_BUFF[m]);
+    printf("\n"); */
 
     fwrite(OUT_BUFF, sizeof(elem_t), OUT_BUFF_LEN, out_stream);
-    printf("Compilation OK\n");
     fclose(out_stream);
+    printf("ASM code is written\n");
+    printf("Compilation OK\n");
+
 
     return 0;
 }
@@ -145,7 +151,9 @@ int tokens_check(asm_t* assembly)
         curr_type = TOKEN_BUFF[i].type;
         next_type = TOKEN_BUFF[i+1].type;
 
-        if (((curr_type >= TYPE_NUM && curr_type <= RAM_PTR) || curr_type == TYPE_JMP_LABEL) && next_type != TYPE_CMD && next_type != TYPE_LABEL)
+        if (COMM_LINES[TOKEN_BUFF[i].line]) continue;
+
+        if (((curr_type >= TYPE_NUM && curr_type <= RAM_PTR) || curr_type == TYPE_JMP_LABEL) && next_type != TYPE_CMD && next_type != TYPE_LABEL && next_type != TYPE_COMMENT)
             ASM_SYNTAX_ERROR("ERROR. next node doesn't fit", BAD_NEXT_NODE);
 
         if (curr_cmd >= CMD_JMP && curr_cmd <= CMD_JMP_NE && next_type != TYPE_JMP_LABEL)
@@ -191,7 +199,7 @@ int asm_ctor(asm_t* assembly, FILE* stream)
     init_push_pop(assembly);
     if (assembly->status) return 1;
 
-    for (unsigned i = 0; i < TOKEN_CNT; i++)
+    /* for (unsigned i = 0; i < TOKEN_CNT; i++)
        printf("tok_word: %s\nline: %u\npos: %u\ntype: %d\nval: %lg\ncmd: %d\n\n", TOKEN_BUFF[i].word, TOKEN_BUFF[i].line, TOKEN_BUFF[i].inline_pos, TOKEN_BUFF[i].type, TOKEN_BUFF[i].val, TOKEN_BUFF[i].cmd);
 
     for (unsigned i = 0; i < LABELS_CNT; i++)
@@ -199,12 +207,15 @@ int asm_ctor(asm_t* assembly, FILE* stream)
 
     for (unsigned i = 0; i < MAX_LINES_CNT; i++)
         if (COMM_LINES[i])
-            printf("commented - %u\n", i);
+            printf("commented - %u\n", i); */
 
     OUT_BUFF_LEN = TOKEN_CNT - MINUS_CNT;
 
     assembly->status    = 0;
     assembly->minus_cnt = 0;
+
+    printf("ASM code is constructed\n");
+
     return 0;
 }
 
@@ -275,12 +286,15 @@ int init_labels(asm_t* assembly)
         for (int i = 0; i < (int) LABELS_CNT; i++)
             if (!strcmp(TOKEN_BUFF[POS].word + 1, LABELS_BUFF[i].name))
             {
-                LABELS_BUFF[i].pos = POS; //-minus_cnt
+                LABELS_BUFF[i].pos = POS;
                 LABELS_BUFF[i].init_cnt++;
                 MINUS_CNT++;
                 break;
             }
     }
+
+    if (TOKEN_BUFF[POS].type == TYPE_COMMENT)
+        MINUS_CNT++;
     POS++;
 
     for (; POS < TOKEN_CNT; POS++)
@@ -351,7 +365,7 @@ int is_jmp_label(asm_t* assembly)
 
     if (TOKEN_BUFF[POS].type != TYPE_LABEL) return 0;
 
-    if (TOKEN_BUFF[POS-1].type == TYPE_CMD && TOKEN_BUFF[POS-1].cmd >= CMD_JMP && TOKEN_BUFF[POS-1].cmd <= CMD_JMP_NE)
+    if (TOKEN_BUFF[POS-1].type == TYPE_CMD && TOKEN_BUFF[POS-1].cmd >= CMD_JMP && TOKEN_BUFF[POS-1].cmd <= CMD_CALL)
         return 1;
     return 0;
 }
@@ -363,7 +377,7 @@ int is_init_label(asm_t* assembly)
 
     if (TOKEN_BUFF[POS].type != TYPE_LABEL) return 0;
 
-    if (TOKEN_BUFF[POS-1].type == TYPE_CMD && TOKEN_BUFF[POS-1].cmd >= CMD_JMP && TOKEN_BUFF[POS-1].cmd <= CMD_JMP_NE)
+    if (TOKEN_BUFF[POS-1].type == TYPE_CMD && TOKEN_BUFF[POS-1].cmd >= CMD_JMP && TOKEN_BUFF[POS-1].cmd <= CMD_CALL)
         return 0;
     return 1;
 }
@@ -436,16 +450,13 @@ int tokenize_line(asm_t* assembly, unsigned line_num)
     ASSERT(LINES_BUFF);
     ASSERT(TEXT_BUFF);
 
-    //printf("%u\n", line_num);
-
     char*    base = LINES_BUFF[line_num];
     unsigned inline_pos = 0;
 
     while (*(base + inline_pos))
     {
-        //printf("%s", (base + inline_pos));
         skip_blanks(base, &inline_pos);
-        if (get_word(assembly, line_num, &inline_pos)) return 1; // недописал получение слов в токены.
+        if (get_word(assembly, line_num, &inline_pos)) return 1;
     }
     return 0;
 }
@@ -586,7 +597,7 @@ cmd_codes get_cmd(char* word)
     if (!strcmp(word, "ret"))  return CMD_RET;
 
     if (!strcmp(word, "sqrt"))    return CMD_SQRT;
-    if (!strcmp(word, "noroots")) return CMD_NROOTS;
+    if (!strcmp(word, "nroots")) return CMD_NROOTS;
     if (!strcmp(word, "allnum"))  return CMD_ALLNUM;
 
     if (!strcmp(word, "ax")) return REG_AX;

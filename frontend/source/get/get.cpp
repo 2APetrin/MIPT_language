@@ -9,6 +9,9 @@ FILE* log_file;
 token_t* get_general(text_t* text)
 {
     ASSERT(text);
+    ASSERT(TOKEN_BUFF);
+    ASSERT(DOTS_BUFF);
+
     POS = 0;
 
     open_write_file("frontend/logs/frontend_log.html", &log_file);
@@ -47,6 +50,7 @@ token_t* get_general(text_t* text)
 token_t* get_start(text_t* text)
 {
     ASSERT(text);
+    ASSERT(TOKEN_BUFF);
 
     if (TOKEN_BUFF[POS]->type == TYPE_START) FREE()
     else
@@ -60,7 +64,7 @@ token_t* get_start(text_t* text)
 
     if (TOKEN_BUFF[POS]->type == TYPE_C_BRCKT) FREE()
     else
-        GET_SYNTAX_ERROR("ERROR in get start. Close bracket (enter_mipt) is missing");
+        GET_SYNTAX_ERROR("ERROR in get start. Close bracket (get_sent_down) is missing");
 
     if (POS < WORDS_CNT && TOKEN_BUFF[POS]->type == TYPE_FINISH)
     {
@@ -103,6 +107,7 @@ token_t* get_comp(text_t* text)
 token_t* get_operator(text_t* text)
 {
     ASSERT(text);
+    ASSERT(TOKEN_BUFF);
 
     token_type type = TOKEN_BUFF[POS]->type;
 
@@ -118,13 +123,127 @@ token_t* get_operator(text_t* text)
 
     if (type == TYPE_RETURN)                       return get_return(text);
 
+    if (type == TYPE_SCANF)                        return get_scanf(text);
+
+    if (type == TYPE_SQRT)                         return get_sqrt(text);
+
+    if (type == TYPE_ALLNUM)                       return get_allnum(text);
+
+    if (type == TYPE_NROOTS)                       return get_nroots(text);
+
     return nullptr;
+}
+
+
+token_t* get_nroots(text_t* text)
+{
+    ASSERT(text);
+    ASSERT(TOKEN_BUFF);
+
+    if (TOKEN_BUFF[POS]->type != TYPE_NROOTS) return nullptr;
+    token_t* first_node = TOKEN_BUFF[POS];
+    POS++;
+
+    if (TOKEN_BUFF[POS]->type == TYPE_DOT) FREE()
+    else
+        GET_SYNTAX_ERROR("ERROR in nroots. Dot in the end is missing");
+
+    token_t* ret_node = nullptr;
+    CREATE_RET_NODE();
+    first_node->parent   = ret_node;
+    ret_node->left_child = first_node;
+
+    return ret_node;
+}
+
+
+token_t* get_allnum(text_t* text)
+{
+    ASSERT(text);
+    ASSERT(TOKEN_BUFF);
+
+    if (TOKEN_BUFF[POS]->type != TYPE_ALLNUM) return nullptr;
+    token_t* first_node = TOKEN_BUFF[POS];
+    POS++;
+
+    if (TOKEN_BUFF[POS]->type == TYPE_DOT) FREE()
+    else
+        GET_SYNTAX_ERROR("ERROR in allnum. Dot in the end is missing");
+
+    token_t* ret_node = nullptr;
+    CREATE_RET_NODE();
+    first_node->parent   = ret_node;
+    ret_node->left_child = first_node;
+
+    return ret_node;
+}
+
+
+token_t* get_sqrt(text_t* text)
+{
+    ASSERT(text);
+    ASSERT(TOKEN_BUFF);
+
+    if (TOKEN_BUFF[POS]->type != TYPE_SQRT) return nullptr;
+    token_t* first_node = TOKEN_BUFF[POS];
+    POS++;
+
+    first_node->left_child = get_expr(text);
+    if (first_node->left_child) first_node->left_child->parent = first_node;
+
+    if (TOKEN_BUFF[POS]->type == TYPE_SQRT_BRCKT) FREE()
+    else
+        GET_SYNTAX_ERROR("ERROR in sqrt. Close bracket (koren) is missing");
+
+    if (TOKEN_BUFF[POS]->type != TYPE_DOT)
+        GET_SYNTAX_ERROR("ERROR in sqrt. Dot in the end is missing");
+
+    FREE();
+
+    token_t* ret_node = nullptr;
+    CREATE_RET_NODE();
+    first_node->parent   = ret_node;
+    ret_node->left_child = first_node;
+
+    return ret_node;
+}
+
+
+token_t* get_scanf(text_t* text)
+{
+    ASSERT(text);
+    ASSERT(TOKEN_BUFF);
+
+    if (TOKEN_BUFF[POS]->type != TYPE_SCANF) return nullptr;
+
+    token_t* first_node = TOKEN_BUFF[POS];
+    POS++;
+
+    if (TOKEN_BUFF[POS]->type != TYPE_VAR)
+        GET_SYNTAX_ERROR("ERROR in scanf. Variable after take_note is missing");
+
+    first_node->left_child  = TOKEN_BUFF[POS];
+    TOKEN_BUFF[POS++]->parent = first_node;
+
+    if (TOKEN_BUFF[POS]->type != TYPE_DOT)
+        GET_SYNTAX_ERROR("ERROR in print. Dot in the end is missing");
+
+    FREE();
+
+    token_t* ret_node = nullptr;
+    CREATE_RET_NODE();
+    first_node->parent   = ret_node;
+    ret_node->left_child = first_node;
+
+    return ret_node;
 }
 
 
 token_t* get_loop(text_t* text)
 {
     ASSERT(text);
+    ASSERT(TOKEN_BUFF);
+    ASSERT(DOTS_BUFF);
 
     token_t* curr_node  = TOKEN_BUFF[POS];
     token_t* first_node = TOKEN_BUFF[POS];
@@ -166,6 +285,8 @@ token_t* get_loop(text_t* text)
 token_t* get_decrease(text_t* text)
 {
     ASSERT(text);
+    ASSERT(TOKEN_BUFF);
+    ASSERT(DOTS_BUFF);
 
     token_t* curr_node  = TOKEN_BUFF[POS];
     token_t* first_node = TOKEN_BUFF[POS];
@@ -196,11 +317,26 @@ token_t* get_decrease(text_t* text)
 token_t* get_return(text_t* text)
 {
     ASSERT(text);
+    ASSERT(TOKEN_BUFF);
+    ASSERT(DOTS_BUFF);
 
     token_t* curr_node   = TOKEN_BUFF[POS];
     token_t* first_node  = TOKEN_BUFF[POS];
 
     POS++;
+
+    if (TOKEN_BUFF[POS]->type == TYPE_DOT)
+    {
+        token_t* ret_node = nullptr;
+        CREATE_RET_NODE();
+        first_node->parent   = ret_node;
+        ret_node->left_child = first_node;
+        first_node->type = TYPE_RETURN_VOID;
+
+        FREE();
+
+        return ret_node;
+    }
 
     token_t* expr = get_expr(text);
 
@@ -232,6 +368,8 @@ token_t* get_return(text_t* text)
 token_t* get_variable_op(text_t* text)
 {
     ASSERT(text);
+    ASSERT(TOKEN_BUFF);
+    ASSERT(FUNC_BUFF);
 
     token_type type = TOKEN_BUFF[POS]->type;
 
@@ -250,6 +388,9 @@ token_t* get_variable_op(text_t* text)
 
 token_t* get_func_call(text_t* text)
 {
+    ASSERT(text);
+    ASSERT(TOKEN_BUFF);
+
     if (TOKEN_BUFF[POS]->type != TYPE_VAR) return nullptr;
 
     TOKEN_BUFF[POS]->type = TYPE_FUNC_CALL;
@@ -333,6 +474,8 @@ token_t* get_func_call(text_t* text)
 token_t* get_var_initialization(text_t* text)
 {
     ASSERT(text);
+    ASSERT(TOKEN_BUFF);
+    ASSERT(DOTS_BUFF);
 
     if (TOKEN_BUFF[POS]->type != TYPE_VAR_INIT) return nullptr;
 
@@ -391,6 +534,10 @@ token_t* get_var_initialization(text_t* text)
 
 token_t* get_assignment(text_t* text)
 {
+    ASSERT(text);
+    ASSERT(TOKEN_BUFF);
+    ASSERT(DOTS_BUFF);
+
     token_t* first_node = nullptr; 
 
     for (unsigned i = 0; i < VAR_CNT; i++)
@@ -412,6 +559,11 @@ token_t* get_assignment(text_t* text)
     token_t* right_part = nullptr;
     for (unsigned i = 0; i < FUNC_CNT; i++) 
         if (!strcmp(FUNC_BUFF[i]->name, TOKEN_BUFF[POS]->word)) right_part = get_func_call(text);
+
+    if (!right_part)
+    {
+        right_part = get_sqrt(text);
+    }
 
     if (!right_part)
     {
@@ -445,6 +597,8 @@ token_t* get_assignment(text_t* text)
 token_t* get_If(text_t* text)
 {
     ASSERT(text);
+    ASSERT(TOKEN_BUFF);
+    ASSERT(DOTS_BUFF);
 
     if (TOKEN_BUFF[POS]->type != TYPE_IF) return nullptr;
 
@@ -511,6 +665,7 @@ token_t* get_If(text_t* text)
 token_t* get_logical_expr(text_t* text)
 {
     ASSERT(text);
+    ASSERT(TOKEN_BUFF);
 
     token_t* left_part = get_expr(text);
 
@@ -538,6 +693,7 @@ token_t* get_logical_expr(text_t* text)
 token_t* get_expr(text_t* text)
 {
     ASSERT(text);
+    ASSERT(TOKEN_BUFF);
 
     token_t* node1 = get_T(text);
     if (!node1) return nullptr;
@@ -568,6 +724,7 @@ token_t* get_expr(text_t* text)
 token_t* get_T(text_t* text)
 {
     ASSERT(text);
+    ASSERT(TOKEN_BUFF);
 
     token_t* node1 = get_P(text);
     if (!node1) return nullptr;
@@ -598,6 +755,7 @@ token_t* get_T(text_t* text)
 token_t* get_P(text_t* text)
 {
     ASSERT(text);
+    ASSERT(TOKEN_BUFF);
 
     if (TOKEN_BUFF[POS]->type == TYPE_EXPR_O_BR)
     {
@@ -620,6 +778,7 @@ token_t* get_P(text_t* text)
 token_t* get_elem(text_t* text)
 {
     ASSERT(text);
+    ASSERT(TOKEN_BUFF);
 
     if (TOKEN_BUFF[POS]->type == TYPE_NUM)
     {
@@ -633,7 +792,6 @@ token_t* get_elem(text_t* text)
         {
             if (!strcmp(VAR_BUFF[i]->name, TOKEN_BUFF[POS]->word))
             {
-                //printf("%s - %s\n", VAR_BUFF[i]->name, TOKEN_BUFF[POS]->word);
                 POS++;
                 return TOKEN_BUFF[POS-1];
             }
@@ -650,6 +808,8 @@ token_t* get_elem(text_t* text)
 token_t* get_print(text_t* text)
 {
     ASSERT(text);
+    ASSERT(TOKEN_BUFF);
+    ASSERT(DOTS_BUFF);
 
     if (TOKEN_BUFF[POS]->type != TYPE_PRINT) return nullptr;
 
@@ -690,6 +850,8 @@ VAR_CNT++;                                                                   \
 token_t* get_def_function(text_t* text) 
 {
     ASSERT(text);
+    ASSERT(TOKEN_BUFF);
+    ASSERT(DOTS_BUFF);
 
     if (TOKEN_BUFF[POS]->type != TYPE_FUNC_INIT) return nullptr;
     FREE();
@@ -716,8 +878,31 @@ token_t* get_def_function(text_t* text)
 
     FREE();
 
-    if (TOKEN_BUFF[POS]->type != TYPE_VAR)
-        GET_SYNTAX_ERROR("ERROR in defining function. Bed vars heheheh. word is not a variable");
+    if (TOKEN_BUFF[POS]->type == TYPE_C_F_BR)
+    {
+        FREE();
+
+        if (TOKEN_BUFF[POS]->type == TYPE_O_BRCKT) FREE()
+        else
+            GET_SYNTAX_ERROR("ERROR in defining function. Open bracket (enter_mipt) is missing");
+
+        token_t* func_code = get_comp(text);
+
+        if (TOKEN_BUFF[POS]->type == TYPE_C_BRCKT) FREE()
+        else
+            GET_SYNTAX_ERROR("ERROR in defining function. Close bracket (get_sent_down) is missing");
+
+        middle_node->left_child  = nullptr;
+        middle_node->right_child = func_code;
+        if (func_code) func_code->parent = middle_node;
+
+        token_t* ret_node = nullptr;
+        CREATE_RET_NODE();
+        ret_node->left_child = first_node;
+        first_node->parent   = ret_node;
+
+        return ret_node;
+    }
 
     token_t* temp = TOKEN_BUFF[POS];
 
@@ -773,7 +958,7 @@ token_t* get_def_function(text_t* text)
     }
 
     if (TOKEN_BUFF[POS]->type != TYPE_C_F_BR)
-        GET_SYNTAX_ERROR("ERROR in defining function. Expected [");
+        GET_SYNTAX_ERROR("ERROR in defining function. Expected ]");
 
     FREE();
 

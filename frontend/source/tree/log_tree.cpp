@@ -57,7 +57,7 @@ int graphviz_add_node(token_t * node)
 
 int print_dump(void)
 {
-    system("dot frontend/logs/log_graphviz.dot -Tpng -o frontend/logs/images/simple_log.png");
+    system("dot frontend/logs/log_graphviz.dot -Tsvg -o frontend/logs/images/simple_log.svg");
     return 0;
 }
 
@@ -152,7 +152,6 @@ int ast_node_link(token_t* node)
 
 int tree_print_dump(token_t* root)
 {
-    //printf("-- %d\n", graphviz_png_count);
     if (root == nullptr)
     {
         printf("error in dump tree. root is null\n");
@@ -167,11 +166,9 @@ int tree_print_dump(token_t* root)
 
     close_graphviz_file();
 
-    char sys_cmd[200] = "dot frontend/logs/log_graphviz.dot -Tpng -o frontend/logs/images/tree_dump";
-    snprintf(sys_cmd + strlen(sys_cmd), 30, "%d.png", graphviz_png_count);
+    char sys_cmd[200] = "dot frontend/logs/log_graphviz.dot -Tsvg -o frontend/logs/images/tree_dump";
+    snprintf(sys_cmd + strlen(sys_cmd), 30, "%d.svg", graphviz_png_count);
     system(sys_cmd);
-
-    //fprintf(log_file, "\n<img src=\"images/list_dump%d.png\" width=\"60%%\">\n", graphviz_png_count);
 
     graphviz_png_count++;
 
@@ -193,7 +190,6 @@ unsigned get_node_color_from_type(token_type type)
 
 int ast_tree_print_dump(token_t* root)
 {
-    //printf("-- %d\n", graphviz_png_count);
     if (root == nullptr)
     {
         printf("error in dump tree. root is null\n");
@@ -208,11 +204,9 @@ int ast_tree_print_dump(token_t* root)
 
     close_graphviz_file();
 
-    char sys_cmd[200] = "dot frontend/logs/log_graphviz.dot -Tpng -o middleend/logs/images/tree_dump";
-    snprintf(sys_cmd + strlen(sys_cmd), 30, "%d.png", graphviz_png_count + 100);
+    char sys_cmd[200] = "dot frontend/logs/log_graphviz.dot -Tsvg -o middleend/logs/images/tree_dump";
+    snprintf(sys_cmd + strlen(sys_cmd), 30, "%d.svg", graphviz_png_count + 100);
     system(sys_cmd);
-
-    //fprintf(log_file, "\n<img src=\"images/list_dump%d.png\" width=\"60%%\">\n", graphviz_png_count);
 
     graphviz_png_count++;
 

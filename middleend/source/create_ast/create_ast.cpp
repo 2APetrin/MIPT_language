@@ -19,7 +19,7 @@ int read_ast_tree(ast_tree_t* tree)
 
     create_ast_tree(tree);
 
-    printf("Tree is ready\n");
+    printf("AST tree is ready\n");
     ast_tree_print_dump(tree->ast_root);
 
     return 0;
@@ -38,6 +38,9 @@ int ast_ctor(ast_tree_t* tree, const char* filename)
     LEN = (unsigned) ftell(in_stream);
     rewind(in_stream);
 
+    tree->vars      = (char**) calloc(MAX_VAR_COUNT, sizeof(char*));
+    tree->var_count = 0;
+
     BUFF = (char*) calloc (LEN + 1, sizeof(char));
     if (!BUFF) return 1;
 
@@ -47,11 +50,9 @@ int ast_ctor(ast_tree_t* tree, const char* filename)
     fclose(in_stream);
 
     tree->simplify_status = 1;
-    tree->var_count = 0;
     TEXT_POS        = 0;
 
     tree->ast_root  = nullptr;
-    tree->vars      = nullptr;
     tree->status    = 0;
     return 0;
 }
@@ -65,6 +66,14 @@ int ast_dtor(ast_tree_t* tree)
     tree->ast_root = nullptr;
     free(BUFF);
     BUFF = nullptr;
+    for (unsigned i = 0; i < tree->var_count; i++)
+    {
+        free(tree->vars[i]);
+        tree->vars[i] = nullptr;
+    }
+    free(tree->vars);
+
+    printf("AST tree is destructed\n\n");
 
     return 0;
 }
@@ -83,10 +92,8 @@ int create_ast_tree(ast_tree_t* tree)
 token_t* get_module(ast_tree_t* tree)
 {
     if (BUFF[TEXT_POS] != '(')
-    {
-        //fprintf(ast_log_file, "<pre>error in pos %u. module. Expected (, found %c</pre>\n", TEXT_POS + 1, BUFF[TEXT_POS]);
         return nullptr;
-    }
+
     TEXT_POS++;
 
     int cmd     = 0;
@@ -117,9 +124,10 @@ token_t* get_module(ast_tree_t* tree)
 
         case TYPE_DECREASE:
         case TYPE_RETURN:
+        case TYPE_SCANF:
         case TYPE_PRINT:
+        case TYPE_SQRT:
         {
-            //printf("entered type print\n"); 
             token_t* left_node = get_module(tree);
             if (!left_node)
                 AST_SYNTAX_ERROR("(type decrease/return/print) Expected (");
@@ -131,6 +139,17 @@ token_t* get_module(ast_tree_t* tree)
 
             token_t* ret = create_node((token_type) cmd, POISON, left_node, nullptr);
 
+            return ret;
+        }
+
+        case TYPE_ALLNUM:
+        case TYPE_NROOTS:
+        case TYPE_RETURN_VOID:
+        {
+            if (BUFF[TEXT_POS] != ')')
+                AST_SYNTAX_ERROR("(type return void) Expected )");
+            TEXT_POS++;
+            token_t* ret = create_node((token_type) cmd, POISON);
             return ret;
         }
 
@@ -161,7 +180,7 @@ token_t* get_module(ast_tree_t* tree)
             return ret;
         }
 
-        case TYPE_FUNC_ID: // остановился тут на дописывании случаев для объявления функции и вызова функции. надо сделать чтобы после имени функции возможно шли скобки открывающиеся
+        case TYPE_FUNC_ID:
         {
             if (BUFF[TEXT_POS] != ':')
                 AST_SYNTAX_ERROR("(type def function) Expected :");
@@ -256,6 +275,17 @@ token_t* get_module(ast_tree_t* tree)
             token_t* ret = create_node(TYPE_VAR, POISON, nullptr, nullptr);
             ret->word = (char*) calloc (MAX_WORD_LEN, sizeof(char));
             strncpy(ret->word, word, MAX_WORD_LEN-1);
+
+            int flag = 1;
+            for (unsigned i = 0; i < tree->var_count; i++)
+                if (!strcmp(tree->vars[i], word)) flag = 0;
+
+            if (flag)
+            {
+                tree->vars[tree->var_count] = (char*) calloc(MAX_WORD_LEN, sizeof(char));
+                strncpy(tree->vars[tree->var_count], word, MAX_WORD_LEN-1);
+                tree->var_count++;
+            }
 
             return ret;
         }

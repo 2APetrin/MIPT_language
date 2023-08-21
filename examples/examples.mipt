@@ -1,0 +1,211 @@
+born
+enter_mipt
+    whisper_to_the_professor 0 in_the_ear$
+
+get_sent_down
+die
+
+
+
+born
+enter_mipt
+    invent x 5$
+
+    pereeb x nulevok_untill_they_run_out
+    enter_mipt
+        whisper_to_the_professor x in_the_ear$
+    get_sent_down
+
+get_sent_down
+die
+
+
+
+skill_to botat [ a | b | c ]
+enter_mipt
+    whisper_to_the_professor a + b in_the_ear$
+    hand_in 0 zadach$
+get_sent_down
+
+born
+enter_mipt
+    invent num 3$
+    invent x 1$
+    invent kok 100$
+
+    x podgon_pod botat [ num | 1.1 | kok ]$
+
+get_sent_down
+die
+
+
+
+skill_to add [ a | b ]
+enter_mipt
+    hand_in a + b zadach$
+get_sent_down
+
+skill_to mul [ c | b ]
+enter_mipt
+    hand_in c * b zadach$
+get_sent_down
+
+born
+enter_mipt
+    invent x 1$
+    invent y 2$
+
+    y podgon_pod add [ x | 3.66 ]$
+    x podgon_pod mul [ x | y ]$
+
+    whisper_to_the_professor x in_the_ear$
+
+get_sent_down
+die
+
+
+================== quadratic ==================
+skill_to linear_eq [ koeff_b | koeff_c ]
+enter_mipt
+    when koeff_b <-> 0 togda
+    enter_mipt
+        when koeff_c <-> 0 togda
+        enter_mipt
+            what_ugodno$
+            hand_in$
+        get_sent_down
+
+        when_nepravilno
+        enter_mipt
+            vihoda_net$
+            hand_in$
+        get_sent_down
+    get_sent_down
+
+    when_nepravilno
+    enter_mipt
+        whisper_to_the_professor -1 * koeff_c / koeff_b in_the_ear$
+        hand_in$
+    get_sent_down
+
+    hand_in$
+get_sent_down
+
+born
+enter_mipt
+    invent koeff_a 0$
+    invent koeff_b 0$
+    invent koeff_c 0$
+
+    take_note koeff_a$
+    take_note koeff_b$
+    take_note koeff_c$
+
+    when koeff_a <-> 0 togda
+    enter_mipt
+        linear_eq [ koeff_b | koeff_c ]$
+    get_sent_down
+
+    when_nepravilno
+    enter_mipt
+        invent discriminant 0$
+        discriminant podgon_pod koeff_b * koeff_b - 4 * koeff_a * koeff_c$
+
+        when discriminant < 0 togda
+        enter_mipt
+            vihoda_net$
+        get_sent_down
+
+        when_nepravilno
+        enter_mipt
+            when discriminant <-> 0 togda
+            enter_mipt
+                whisper_to_the_professor -1 * koeff_b / ( 2 * koeff_a ) in_the_ear$
+            get_sent_down
+
+            when_nepravilno
+            enter_mipt
+                discriminant podgon_pod izvlech discriminant koren$
+                whisper_to_the_professor ( -1 * koeff_b + discriminant ) / ( 2 * koeff_a ) in_the_ear$
+                whisper_to_the_professor ( -1 * koeff_b - discriminant ) / ( 2 * koeff_a ) in_the_ear$
+
+            get_sent_down
+        get_sent_down
+
+    get_sent_down
+
+get_sent_down
+die
+================== quadratic ==================
+
+
+
+================== just test 1 ==================
+born
+enter_mipt
+    invent x 0$
+    take_note x$
+    invent y 0$
+    take_note y$
+
+    when x <-> y togda
+    enter_mipt
+        when x -> -1 togda
+        enter_mipt
+            whisper_to_the_professor 1 in_the_ear$
+        get_sent_down
+
+        when_nepravilno
+        enter_mipt
+            whisper_to_the_professor 2 in_the_ear$
+        get_sent_down
+
+        whisper_to_the_professor 3 in_the_ear$
+    get_sent_down
+
+    when_nepravilno
+    enter_mipt
+        whisper_to_the_professor 4 in_the_ear$
+    get_sent_down
+
+    pereeb x nulevok_untill_they_run_out
+    enter_mipt
+        whisper_to_the_professor y - x in_the_ear$
+        solve_nulevka x$
+    get_sent_down
+
+get_sent_down
+die
+================== just test 1 ==================
+
+
+================== just test 2 ==================
+skill_to poop [ ]
+enter_mipt
+    invent x 0$
+
+    when 1 <-> 0 togda
+    enter_mipt
+        when x <-> 1 togda
+        enter_mipt
+            whisper_to_the_professor x in_the_ear$
+        get_sent_down
+        when_nepravilno
+        enter_mipt
+            whisper_to_the_professor x + 100 in_the_ear$
+        get_sent_down
+    get_sent_down
+    when_nepravilno
+    enter_mipt
+        whisper_to_the_professor x in_the_ear$
+    get_sent_down
+
+    hand_in$
+get_sent_down
+
+born
+enter_mipt
+    poop [ ]$
+get_sent_down
+die
+================== just test 2 ==================
