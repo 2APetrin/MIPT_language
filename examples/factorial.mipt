@@ -5,13 +5,10 @@ enter_mipt
         hand_in 1 zadach$
     get_sent_down
 
-    invent num_temp 0$
-    num_temp podgon_pod num - 1$
-
     invent fact_temp 0$
 
-    fact_temp podgon_pod fact [ num_temp ]$
-    fact_temp podgon_pod fact_temp * ( num_temp + 1 ) $
+    fact_temp podgon_pod fact [ num - 1 ]$
+    fact_temp podgon_pod fact_temp * num$
 
     hand_in fact_temp zadach$
 get_sent_down
@@ -25,5 +22,6 @@ enter_mipt
     x podgon_pod fact [ x ]$
 
     whisper_to_the_professor x in_the_ear$
+
 get_sent_down
 die

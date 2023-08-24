@@ -3,7 +3,7 @@
 #include "../tree/tree.h"
 #include "../tokenizer/tokenizer.h"
 
-//! @brief writes error in log file and returns nullptr
+//! @brief get.cpp macros that writes error in log_file and returns nullptr
 #define GET_SYNTAX_ERROR(str)                                                                                                             \
 {                                                                                                                                          \
     text->status++;                                                                                                                            \
@@ -14,7 +14,7 @@
 }
 
 
-//! @brief initializes node that is going to be created while copile executing
+//! @brief get.cpp macros initializes node that is going to be created while compile executing
 #define CREATE_RET_NODE();                     \
 {                                               \
     ret_node = create_node(TYPE_DOT, POISON);    \
@@ -22,31 +22,95 @@
     DOTS_CNT++;                                    \
 }
 
-
+//! @brief gets main rule of EBNF grammar of our programming language
+//!
+//! @param [out] text text_t pointer to text struct - main structure of frontend
+//!
+//! @return root of a tree that is created while recursive descent parsing or a nullptr if error happened
 token_t* get_general(text_t* text);
 
+//! @brief gets definition of function based on our EBNF grammar
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of a tree that is tree of function definition or a nullptr if error happened
 token_t* get_def_function(text_t* text);
 
+//! @brief gets main block of our programm (main function) based on our EBNF grammar
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of a main codetree of user's programm that is created while recursive descent parsing or a nullptr if error happened
 token_t* get_start(text_t* text);
 
+//! @brief gets operators while it is able to do it (based on our EBNF grammar)
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of a tree that is tree of code block in brackets ({ *** }) or a nullptr if error happened
 token_t* get_comp(text_t* text);
 
+//! @brief gets one operator of our EBNF grammar
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of a operator's tree or a nullptr if error happened
 token_t* get_operator(text_t* text);
 
+//! @brief gets definition of print function of our EBNF grammar
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of a print tree or a nullptr if error happened
 token_t* get_print(text_t* text);
 
+//! @brief gets IF operator of our EBNF grammar
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of a IF tree with or without else or a nullptr if error happened
 token_t* get_If(text_t* text);
 
+//! @brief gets math expression with nubers, math operators and variables
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of a expression tree or a nullptr if error happened
 token_t* get_expr(text_t* text);
 
+//! @brief part of get expression, gets multiplication and division operators
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of a multiplication or division tree or a nullptr if error happened
 token_t* get_T(text_t* text);
 
+//! @brief part of get expression, gets brackets and what is in there
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of a expression tree of bracets content or a nullptr if error happened
 token_t* get_P(text_t* text);
 
+//! @brief part of get expression, gets number or variable
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of a number or variable token/tree_node or a nullptr if error happened
 token_t* get_elem(text_t* text);
 
+//! @brief gets logical expression with its sign based on our EBNF grammar
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of a condition tree or a nullptr if error happened
 token_t* get_logical_expr(text_t* text);
 
+//! @brief gets variable operator (initialization/assignment/function_call)
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of fitting tree or a nullptr if error happened
 token_t* get_variable_op(text_t* text);
 
 token_t* get_var_initialization(text_t* text);

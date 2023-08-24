@@ -1,17 +1,13 @@
 #include "cpu.h"
 #include "../../../file_work/file_work.h"
 
-#define CPU_CODE_ARR cpu->exe_code_arr
-#define CPU_CODE_LEN cpu->exe_code_len
-
-#define CPU_RAM   cpu->ram
-#define CPU_STACK cpu->stack
-
+unsigned global_recursion_cntr = 0;
 
 int run_cpu(FILE* in_stream)
 {
     ASSERT(in_stream);
 
+    global_recursion_cntr = 0;
     cpu_t* cpu = (cpu_t*) calloc(1, sizeof(cpu_t));
     cpu_ctor(cpu, in_stream);
 
@@ -46,7 +42,6 @@ int execute_code(cpu_t* cpu)
     for (size_t i = 0; i < CPU_CODE_LEN; i++)
     {
         cmd  = (int) CPU_CODE_ARR[i];
-        //printf("%3lu - %3d\n", i, cmd);
         val  = 0;
         val1 = 0;
         val2 = 0;
@@ -72,7 +67,13 @@ int execute_code(cpu_t* cpu)
                 break;
 
             case CMD_PUSH_RAM:
-                stack_push(&CPU_STACK, CPU_RAM[(int) CPU_CODE_ARR[++i]]);
+                if ((unsigned) CPU_CODE_ARR[i+1] + MAX_VAR_COUNT * global_recursion_cntr >= RAM_CAPACITY)
+                    {
+                        printf("Error: cannot push RAM\n");
+                        return 1;
+                    }
+                //printf("push - [%u]\n", (unsigned) CPU_CODE_ARR[i + 1] + MAX_VAR_COUNT * global_recursion_cntr);
+                stack_push(&CPU_STACK, CPU_RAM[(unsigned) CPU_CODE_ARR[++i] + MAX_VAR_COUNT * global_recursion_cntr]);
                 break;
 
             case CMD_PUSH_REG:
@@ -105,8 +106,14 @@ int execute_code(cpu_t* cpu)
                 break;
 
             case CMD_POP_RAM:
+                if ((unsigned) CPU_CODE_ARR[i+1] + MAX_VAR_COUNT * global_recursion_cntr >= RAM_CAPACITY)
+                    {
+                        printf("Error: cannot pop RAM\nAddress is too big = %u\n", (unsigned) CPU_CODE_ARR[i+1] + MAX_VAR_COUNT * global_recursion_cntr);
+                        return 1;
+                    }
+                //printf("pop - [%u]\n", (unsigned) CPU_CODE_ARR[i + 1] + MAX_VAR_COUNT * global_recursion_cntr);
                 stack_pop (&CPU_STACK, &val);
-                CPU_RAM[(int) CPU_CODE_ARR[++i]] = val;
+                CPU_RAM[(unsigned) CPU_CODE_ARR[++i] + MAX_VAR_COUNT * global_recursion_cntr] = val;
                 break;
 
             case CMD_POP_REG:
@@ -302,15 +309,21 @@ int execute_code(cpu_t* cpu)
                 break;
 
             case CMD_CALL:
-                //printf("call pushed %lu\n", i + 1);
+                if (RAM_CAPACITY / MAX_VAR_COUNT - 1 <= global_recursion_cntr)
+                {
+                    printf("Error: too many recursions\n");
+                    return 1;
+                }
                 stack_push(&CPU_STACK, (stk_elem_t) i + 1);
                 i = (size_t) CPU_CODE_ARR[i+1] - 1;
+                global_recursion_cntr++;
+                //printf("recursion = %u\n", global_recursion_cntr);
                 break;
 
             case CMD_RET:
                 stack_pop(&CPU_STACK, &val);
-                //printf("ret to %lg\n", val);
                 i = (size_t) val;
+                global_recursion_cntr--;
                 break;
 
             case CMD_SQRT:

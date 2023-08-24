@@ -3,9 +3,8 @@
 
 # VAR_TABLE:
 # num - [0]
-# num_temp - [1]
-# fact_temp - [2]
-# x - [3]
+# fact_temp - [1]
+# x - [2]
 
 
 jmp :main
@@ -28,40 +27,34 @@ jmp :main
    push 0
    pop [1]
    push [0]
+   push [0]
    push 1
    sub
-   pop [1]
-   push 0
-   pop [2]
-   push [1]
-   push [1]
    call :fact
 
-   pop [1]
+   pop [0]
    push ax
-   pop [2]
-   push [2]
+   pop [1]
    push [1]
-   push 1
-   add
+   push [0]
    mul
-   pop [2]
-   push [2]
+   pop [1]
+   push [1]
    pop ax
    ret
 
 :main
    push 0
-   pop [3]
+   pop [2]
    in
-   pop [3]
-   push [3]
-   push [3]
+   pop [2]
+   push [2]
+   push [2]
    call :fact
 
-   pop [3]
+   pop [2]
    push ax
-   pop [3]
-   push [3]
+   pop [2]
+   push [2]
    out
 hlt

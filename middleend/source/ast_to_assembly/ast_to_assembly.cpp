@@ -137,7 +137,7 @@ int subtree_to_assembly(token_t* node, ast_tree_t* tree, FILE* stream)
             }
             push_local_vars(node->left_child, tree, stream);
 
-            push_call_params(node->left_child, tree, stream);
+            subtree_to_assembly(node->left_child, tree, stream);
             fprintf(stream, "   call :%s\n\n", node->word);
             get_local_vars(node->left_child, tree, stream);
 

@@ -6,6 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 #include <ctype.h>
+#include "ASM_DSL.h"
 
 
 #define ASSERT(cond)                                                 \
@@ -17,9 +18,20 @@ if (!(cond))                                                          \
 }
 
 
+#define ASM_SYNTAX_ERROR(str, err)                                              \
+{                                                                                \
+    printf(str);                                                                  \
+    printf("\nline:%u\npos:%u\n\n", TOKEN_BUFF[i].line, TOKEN_BUFF[i].inline_pos); \
+    assembly->status |= err;                                                        \
+}
+
+
 extern FILE* logfile;
 
 typedef double elem_t;
+
+//! @brief maximum variables count
+const unsigned MAX_VAR_COUNT = 128;
 
 const unsigned MAX_WORD_LEN   = 128;
 const unsigned MAX_LABELS_CNT = 128;

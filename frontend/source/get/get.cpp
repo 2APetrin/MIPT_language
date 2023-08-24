@@ -493,7 +493,7 @@ token_t* get_var_initialization(text_t* text)
     int flag = 1;
     unsigned var_pos = VAR_CNT;
 
-    for (unsigned i = 0; i < VAR_CNT; i++)
+    for (unsigned i = 0; i < VAR_CNT && VAR_CNT <= MAX_VAR_COUNT; i++)
         if (!strcmp(VAR_BUFF[i]->name, TOKEN_BUFF[POS]->word))
         {
             flag = 0;
@@ -540,7 +540,7 @@ token_t* get_assignment(text_t* text)
 
     token_t* first_node = nullptr; 
 
-    for (unsigned i = 0; i < VAR_CNT; i++)
+    for (unsigned i = 0; i < VAR_CNT && VAR_CNT <= MAX_VAR_COUNT; i++)
         if (!strcmp(VAR_BUFF[i]->name, TOKEN_BUFF[POS]->word)) first_node = TOKEN_BUFF[POS];
 
     if (!first_node)
@@ -788,7 +788,7 @@ token_t* get_elem(text_t* text)
 
      if (TOKEN_BUFF[POS]->type == TYPE_VAR)
     {
-        for (unsigned i = 0; i < VAR_CNT; i++)
+        for (unsigned i = 0; i < VAR_CNT && VAR_CNT <= MAX_VAR_COUNT; i++)
         {
             if (!strcmp(VAR_BUFF[i]->name, TOKEN_BUFF[POS]->word))
             {
@@ -907,7 +907,7 @@ token_t* get_def_function(text_t* text)
     token_t* temp = TOKEN_BUFF[POS];
 
     int flag = 1;
-    for (unsigned i = 0; i < VAR_CNT; i++)
+    for (unsigned i = 0; i < VAR_CNT && VAR_CNT <= MAX_VAR_COUNT; i++)
         if (!strcmp(TOKEN_BUFF[POS]->word, VAR_BUFF[i]->name)) flag = 0;
 
     if (flag)
@@ -938,7 +938,7 @@ token_t* get_def_function(text_t* text)
         DOTS_CNT++;
 
         flag = 1;
-        for (unsigned i = 0; i < VAR_CNT; i++)
+        for (unsigned i = 0; i < VAR_CNT && VAR_CNT <= MAX_VAR_COUNT; i++)
         {
             if (!strcmp(TOKEN_BUFF[POS]->word, VAR_BUFF[i]->name)) flag = 0;
         }

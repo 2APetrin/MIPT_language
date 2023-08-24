@@ -3,6 +3,14 @@
 #include "../asm/asm.h"
 #include "stack.h"
 
+// ================ CPU DSL ================
+#define CPU_CODE_ARR cpu->exe_code_arr
+#define CPU_CODE_LEN cpu->exe_code_len
+
+#define CPU_RAM   cpu->ram
+#define CPU_STACK cpu->stack
+// =========================================
+
 typedef struct
 {
     my_stack_t stack;
@@ -18,8 +26,7 @@ typedef struct
 } cpu_t;
 
 
-const unsigned RAM_CAPACITY = (1 << 6);
-
+const unsigned RAM_CAPACITY = (1 << 12);
 
 int run_cpu(FILE* in_stream);
 
