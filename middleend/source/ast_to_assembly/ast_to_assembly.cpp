@@ -298,33 +298,6 @@ int push_local_vars(token_t* node, ast_tree_t* tree, FILE* stream)
 }
 
 
-int push_call_params(token_t* node, ast_tree_t* tree, FILE* stream)
-{
-    if (!node) return 0;
-
-    push_call_params(node->right_child, tree, stream);
-    push_call_params(node->left_child, tree, stream);
-
-    if (node->type != TYPE_VAR && node->type != TYPE_NUM) return 0;
-
-    if (node->type == TYPE_VAR)
-    {
-        for (unsigned i = 0; i < tree->var_count; i++)
-        {
-            if (!strcmp(node->word, tree->vars[i]))
-            {
-                fprintf(stream, "   push [%u]\n", i);
-                break;
-            }
-        }
-    }
-    else
-        fprintf(stream, "   push %lg\n", node->value);
-
-    return 0;
-}
-
-
 int pop_func_params(token_t* node, ast_tree_t* tree, FILE* stream)
 {
     if (!node) return 0;

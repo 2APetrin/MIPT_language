@@ -1,6 +1,6 @@
 #include "cpu.h"
 
-int _stack_ctor(my_stack_t * stk, size_t cap, var_info_t info)
+void _stack_ctor(my_stack_t * stk, size_t cap, var_info_t info)
 {
     assert(stk       != NULL);
     assert(info.name != NULL);
@@ -15,7 +15,6 @@ int _stack_ctor(my_stack_t * stk, size_t cap, var_info_t info)
     stk->stack_info = info;
 
     stack_check(stk);
-    return 0;
 }
 
 void _stack_check(my_stack_t * stk, const char * func_name, const char * file_name, int lineofcall)
@@ -102,7 +101,7 @@ const char * get_dump_reason(int entry_reason)
     return "Unknown reason\n";
 }
 
-int stack_dtor(my_stack_t * stk)
+void stack_dtor(my_stack_t * stk)
 {
     stack_check(stk);
     stack_dump(stk, LOCATION, DUMP_ENTRY);
@@ -117,8 +116,6 @@ int stack_dtor(my_stack_t * stk)
     stk->capacity = 0;
     stk->elemAmt  = 0;
     stk = NULL;
-
-    return 0;
 }
 
 void stack_push(my_stack_t * stk, stk_elem_t val)

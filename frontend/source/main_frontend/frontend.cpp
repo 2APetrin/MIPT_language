@@ -4,7 +4,7 @@
 #include "../../../file_work/file_work.h"
 
 
-token_t* create_tree_of_tokens(text_t* text)
+int create_tree_of_tokens(text_t* text)
 {
     ASSERT(text);
 

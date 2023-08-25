@@ -17,48 +17,44 @@ int open_graphviz_file(void)
 }
 
 
-int close_graphviz_file(void)
+void close_graphviz_file(void)
 {
     ASSERT(graphviz_file);
 
     fprintf(graphviz_file, "}");
 
     fclose(graphviz_file);
-    return 0;
 }
 
 
-int init_graphviz_file(void)
+void init_graphviz_file(void)
 {
     ASSERT(graphviz_file);
 
     fprintf(graphviz_file, "digraph\n{\n");
-
-    return 0;
 }
 
 
-int graphviz_add_node(token_t * node)
+void graphviz_add_node(token_t * node)
 {
     if ((node->type >= TYPE_EQ) && (node->type <= TYPE_LESS_EQ))
     {
         fprintf(graphviz_file, "    node_%p[shape = Mrecord, label = \"{{%p} | {%s} | {line %u} | {pos %u}}\", style = \"filled\", fillcolor = \"#%X\"];\n", node, node, get_typename_from_toktype(node->type), node->line, node->pos, get_node_color_from_type(node->type));
-        return 0;
+        return;
     }
     if (node->type == TYPE_DOT)
     {
         fprintf(graphviz_file, "    node_%p[shape = Mrecord, label = \"{{%p} | {%s}}\", style = \"filled\", fillcolor = \"#%X\"];\n", node, node, get_typename_from_toktype(node->type), get_node_color_from_type(node->type));
-        return 0;
+        return;
     }
     fprintf(graphviz_file, "    node_%p[shape = Mrecord, label = \"{{%p} | {%s} | {%s} | {line %u} | {pos %u}}\", style = \"filled\", fillcolor = \"#%X\"];\n", node, node, node->word, get_typename_from_toktype(node->type), node->line, node->pos, get_node_color_from_type(node->type));
-    return 0;
+    return;
 }
 
 
-int print_dump(void)
+void print_dump(void)
 {
     system("dot frontend/logs/log_graphviz.dot -Tsvg -o frontend/logs/images/simple_log.svg");
-    return 0;
 }
 
 
@@ -95,7 +91,7 @@ int link_nodes(token_t * node1, token_t * node2)
 }
 
 
-int ast_link_nodes(token_t * node1, token_t * node2)
+void ast_link_nodes(token_t * node1, token_t * node2)
 {
     ASSERT(node1);
     ASSERT(node2);
@@ -103,8 +99,6 @@ int ast_link_nodes(token_t * node1, token_t * node2)
 
     if (node2 == node1->right_child) fprintf(graphviz_file, "    node_%p->node_%p [color = \"#1164B4\"];\n", node1, node2);
     if (node2 == node1->left_child)  fprintf(graphviz_file, "    node_%p->node_%p [color = \"#E32636\"];\n", node1, node2);
-
-    return 0;
 }
 
 
@@ -231,7 +225,7 @@ int ast_node_print(token_t* node)
 }
 
 
-int graphviz_add_ast_node(token_t* node)
+void graphviz_add_ast_node(token_t* node)
 {
     token_type type = node->type;
     switch (type)
@@ -239,7 +233,7 @@ int graphviz_add_ast_node(token_t* node)
         case TYPE_NUM:
         {
             fprintf(graphviz_file, "    node_%p[shape = Mrecord, label = \"{{%lg}}\", style = \"filled\", fillcolor = \"#%X\"];\n", node, node->value, get_node_color_from_type(type));
-            return 0;
+            return;
         }
 
         case TYPE_FUNC_CALL:
@@ -247,14 +241,14 @@ int graphviz_add_ast_node(token_t* node)
         case TYPE_VAR:
         {
             fprintf(graphviz_file, "    node_%p[shape = Mrecord, label = \"{{%s}}\", style = \"filled\", fillcolor = \"#%X\"];\n", node, node->word, get_node_color_from_type(type));
-            return 0;
+            return;
         }
 
         default: 
         {
             fprintf(graphviz_file, "    node_%p[shape = Mrecord, label = \"{{%s}}\", style = \"filled\", fillcolor = \"#%X\"];\n", node, get_typename_from_toktype(type), get_node_color_from_type(type));
-            return 0;
+            return;
         }
     }
-    return 0;
+    return;
 }

@@ -106,7 +106,7 @@ int write_exe_array(asm_t* assembly, FILE* out_stream)
 }
 
 
-int tokens_check(asm_t* assembly)
+void tokens_check(asm_t* assembly)
 {
     ASSERT(assembly);
     ASSERT(!assembly->status);
@@ -130,8 +130,6 @@ int tokens_check(asm_t* assembly)
         if (curr_cmd >= CMD_JMP && curr_cmd <= CMD_JMP_NE && next_type != TYPE_JMP_LABEL)
             ASM_SYNTAX_ERROR("ERROR in jump. no label after jump", JMP_WTHT_LABEL);
     }
-
-    return 0;
 }
 
 

@@ -8,7 +8,7 @@
 #include <ctype.h>
 #include "ASM_DSL.h"
 
-
+//! @brief asm.h custom assert
 #define ASSERT(cond)                                                 \
 if (!(cond))                                                          \
 {                                                                      \
@@ -18,6 +18,7 @@ if (!(cond))                                                          \
 }
 
 
+//! @brief asm.h macros to report asm errors
 #define ASM_SYNTAX_ERROR(str, err)                                              \
 {                                                                                \
     printf(str);                                                                  \
@@ -26,17 +27,26 @@ if (!(cond))                                                          \
 }
 
 
+//! @brief global log_file
 extern FILE* logfile;
 
+//! @brief type of number elements in asm
 typedef double elem_t;
 
 //! @brief maximum variables count
 const unsigned MAX_VAR_COUNT = 128;
 
+//! @brief maximum word length
 const unsigned MAX_WORD_LEN   = 128;
+
+//! @brief maximum labels count
 const unsigned MAX_LABELS_CNT = 128;
+
+//! @brief maximum lines of code count
 const unsigned MAX_LINES_CNT  = (1 << 12);
 
+
+//! @brief codes of cpu comands
 enum cmd_codes
 {
     CMD_ERROR = -1,
@@ -81,6 +91,7 @@ enum cmd_codes
 };
 
 
+//! @brief type of token
 enum token_type
 {
     TYPE_CMD       = 1,
@@ -96,6 +107,7 @@ enum token_type
 };
 
 
+//! @brief errors in tokens to translate into message
 enum tokens_errors
 {
     ERR_NO_HLT     = (1 << 0),
@@ -105,6 +117,7 @@ enum tokens_errors
 };
 
 
+//! @brief struct of token of asm code
 typedef struct
 {
     char*  word;
@@ -118,6 +131,7 @@ typedef struct
 } token_t;
 
 
+//! @brief struct of label in code
 typedef struct
 {
     char*    name;
@@ -126,6 +140,7 @@ typedef struct
 } label_t;
 
 
+//! @brief struct of assembly text
 typedef struct
 {
     char*    prog_buff;
@@ -136,6 +151,7 @@ typedef struct
 } asm_text_t;
 
 
+//! @brief main structure of assembly
 typedef struct
 {
     asm_text_t prog_text;
@@ -159,56 +175,160 @@ typedef struct
 
 
 //! @brief Runs the main process of assembly
-//! 
+//!
 //! @param [in] in_stream input stream of asm code
 //! @param [in] out_stream output stream into file with binary code
 //!
+//! @return 0 if worked correctly and 1 if it didn't
 int run_asm(FILE* in_stream, FILE* out_stream);
 
 
 //! @brief Function that fill in the asm_data struct with needed data. Makes tokens from text
 //!
 //! @param [in] in_stream input stream of asm code
-//! @param [in] asm_data_t pointer to struct which contains data of asm code
+//! @param [in] assembly pointer to struct which contains data of asm code
 //!
+//! @return 0 if worked correctly and 1 if it didn't
 int asm_ctor(asm_t* assembly, FILE* stream);
 
+//! @brief destructor of asm struct
+//!
+//! @param [in] assembly pointer to struct which contains data of asm code
+//!
+//! @return 0 if worked correctly and 1 if it didn't
 int asm_dtor(asm_t* assembly);
 
+//! @brief function gets lines in LINE_BUFF
+//!
+//! @param [in] assembly pointer to struct which contains data of asm code
+//!
+//! @return 0 if worked correctly and 1 if it didn't
 int get_lines(asm_t* assembly);
 
+//! @brief gets number of separated tokens
+//!
+//! @param [in] assembly pointer to struct which contains data of asm code
+//!
+//! @return 0 if worked correctly and 1 if it didn't
 int get_num_of_tokens(asm_t* assembly);
 
+//! @brief destructor of asm struct
+//!
+//! @param [in] assembly pointer to struct which contains data of asm code
+//!
+//! @return 0 if worked correctly and 1 if it didn't
 int get_tokens(asm_t* assembly);
 
+//! @brief gets tokens from line (with it's word)
+//!
+//! @param [in] assembly pointer to struct which contains data of asm code
+//!
+//! @return 0 if worked correctly and 1 if it didn't
 int tokenize_line(asm_t* assembly, unsigned line_num);
 
+//! @brief skips blanks in line
+//!
+//! @param [in] base base pointer of line
+//! @param [in] inline_pos position in line
+//!
+//! @return 0 if worked correctly and 1 if it didn't
 int skip_blanks(char* base, unsigned* inline_pos);
 
+//! @brief gets tokens from line (with it's word)
+//!
+//! @param [out] assembly pointer to struct which contains data of asm code
+//! @param [in] line_num number of tokenizing line
+//! @param [in] inline_pos position in line
+//!
+//! @return 0 if worked correctly and 1 if it didn't
 int get_word(asm_t* assembly, unsigned line_num, unsigned* inline_pos);
 
+//! @brief gets tokens from line (with it's word)
+//!
+//! @param [in] assembly pointer to struct which contains data of asm code
+//!
+//! @return 0 if worked correctly and 1 if it didn't
 int init_tokens(asm_t* assembly);
 
+//! @brief gets most info about token
+//!
+//! @param [in] assembly pointer to struct which contains data of asm code
+//!
+//! @return 0 if worked correctly and 1 if it didn't
 int single_token_init(asm_t* assembly);
 
+//! @brief checks word for label
+//!
+//! @param [in] word pointer to word of checkes token
+//!
+//! @return true if is label and false if not
 int is_label(char* word);
 
+//! @brief checks word for number
+//!
+//! @param [in] word pointer to word of checkes token
+//!
+//! @return true if is number and false if not
 int is_num(char* word);
 
+//! @brief checks word for ram pointer ( [num] )
+//!
+//! @param [in] word pointer to word of checkes token
+//!
+//! @return true if is ram ptr and false if not
 int is_ram_ptr(char* word);
 
-cmd_codes get_cmd(char * word);
+//! @brief gets cmd type from word
+//!
+//! @param [in] word pointer to word of checkes token
+//!
+//! @return cmd_code of that word
+cmd_codes get_cmd(char* word);
 
+//! @brief first lap of lables initialization
+//!
+//! @param [out] assembly pointer to struct which contains data of asm code
+//!
+//! @return 0 if worked correctly and 1 if it didn't
 int init_labels(asm_t* assembly);
 
+//! @brief second lap of lables initialization
+//!
+//! @param [out] assembly pointer to struct which contains data of asm code
+//!
+//! @return 0 if worked correctly and 1 if it didn't
 int second_init_labels(asm_t* assembly);
 
+//! @brief checks word for initialization of label
+//!
+//! @param [in] assembly pointer to struct which contains data of asm code
+//!
+//! @return true if is initialization of label and false if not
 int is_init_label(asm_t* assembly);
 
+//! @brief checks word for label after jump
+//!
+//! @param [in] assembly pointer to struct which contains data of asm code
+//!
+//! @return true if is label after jump and false if not
 int is_jmp_label(asm_t* assembly);
 
-int tokens_check(asm_t* assembly);
+//! @brief checks tokens for some errors
+//!
+//! @param [out] assembly pointer to struct which contains data of asm code
+void tokens_check(asm_t* assembly);
 
+//! @brief initialization of push and pops with differet tokens after (number/register/ram_ptr)
+//!
+//! @param [out] assembly pointer to struct which contains data of asm code
+//!
+//! @return 0 if worked correctly and 1 if it didn't
 int init_push_pop(asm_t* assembly);
 
+//! @brief writes array of cmd codes into stream
+//!
+//! @param [out] assembly pointer to struct which contains data of asm code
+//! @param [out] out_stream output stream into file with binary code
+//!
+//! @return 0 if worked correctly and 1 if it didn't
 int write_exe_array(asm_t* assembly, FILE* out_stream);

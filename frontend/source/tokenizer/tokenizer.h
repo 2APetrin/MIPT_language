@@ -189,37 +189,75 @@ typedef struct
 
 
 //! @brief constructor of text struct
+//!
+//! @param [in] codefile_name pointer to name of file with code
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return 0 if all is ok, 1 if error
 int text_ctor(const char* codefile_name, text_t* text);
 
 
-//! @brief gets pointers to strings
+//! @brief gets pointers to strings in TEXT_LINES
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return 0 if all is ok, 1 if error
 int get_strings(text_t* text);
 
 
 //! @brief gets numer of strings in text buffer
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return 0 if all is ok, 1 if error
 int get_num_of_words(text_t* text);
 
 
 //! @brief gets number of lines in text buffer
+//! @brief puts 0 in the end of line
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return 0 if all is ok, 1 if error
 int get_num_of_lines(text_t* text);
 
 
 //! @brief makes tokens out of a line
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return 0 if all is ok, 1 if error
 int get_tokens(text_t* text);
 
 
-//! @brief skips all blank symbols like spaces tabs and \n
+//! @brief skips all blank symbols like spaces tabs and
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//! @param [in] i number of line in TEXT_LINES
+//!
+//! @return 0 if all is ok, 1 if error
 int skip_blanks(text_t* text, unsigned int i);
 
 
 //! @brief destructor of text struct
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
 void text_dtor(text_t* text);
 
 
 //! @brief gets tokens from line
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return 0 if all is ok, 1 if error
 int tokenize_line(text_t* text, unsigned int i);
 
 
 //! @brief gets word from line
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//! @param [in] i number of line in TEXT_LINES
+//!
+//! @return 0 if all is ok, 1 if error
 int get_word(text_t* text, unsigned int i);
 
