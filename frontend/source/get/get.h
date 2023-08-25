@@ -26,6 +26,8 @@
 //!
 //! @param [out] text text_t pointer to text struct - main structure of frontend
 //!
+//! @see get_start() and get_def_function()
+//!
 //! @return root of a tree that is created while recursive descent parsing or a nullptr if error happened
 token_t* get_general(text_t* text);
 
@@ -110,25 +112,82 @@ token_t* get_logical_expr(text_t* text);
 //!
 //! @param [out] text pointer to text_t struct - main structure of frontend
 //!
-//! @return root of fitting tree or a nullptr if error happened
+//! @return root of fitting for command tree or a nullptr if error happened
 token_t* get_variable_op(text_t* text);
 
+//! @brief gets variable initialization based on our EBNF grammar
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of var initialization tree or a nullptr if error happened
 token_t* get_var_initialization(text_t* text);
 
+//! @brief gets variable assignment based on our EBNF grammar
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of var assignment tree or a nullptr if error happened
 token_t* get_assignment(text_t* text);
 
+//! @brief gets while loop tree based on our EBNF grammar
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of while loop tree or a nullptr if error happened
 token_t* get_loop(text_t* text);
 
+//! @brief gets decrease for 1 operator tree based on our EBNF grammar
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of decrease operator tree or a nullptr if error happened
 token_t* get_decrease(text_t* text);
 
+//! @brief gets return operator tree based on our EBNF grammar.
+//! @brief It can be void return (withot arguments) or a normal return with expression in it
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of decrease operator tree or a nullptr if error happened
 token_t* get_return(text_t* text);
 
+//! @brief gets function call tree based on our EBNF grammar.
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of function call tree or a nullptr if error happened
 token_t* get_func_call(text_t* text);
 
+//! @brief gets scanf call tree based on our EBNF grammar.
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of scanf call tree or a nullptr if error happened
 token_t* get_scanf(text_t* text);
 
+//! @brief gets sqrt call tree based on our EBNF grammar.
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of sqrt call tree or a nullptr if error happened
 token_t* get_sqrt(text_t* text);
 
+//! @brief gets allnum call tree based on our EBNF grammar.
+//!
+//! @note that is a command that writes in terminal that every number fits (is used in square equasion solver)
+//! @see examples/quadratic.mipt
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of allnum call tree or a nullptr if error happened
 token_t* get_allnum(text_t* text);
 
+//! @brief gets noroots call tree based on our EBNF grammar.
+//!
+//! @note that is a command that writes in terminal that no numbers fit (is used in square equasion solver)
+//! @see examples/quadratic.mipt
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of noroots call tree or a nullptr if error happened
 token_t* get_nroots(text_t* text);
