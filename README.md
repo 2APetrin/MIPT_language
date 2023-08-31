@@ -3,7 +3,7 @@
 ## Description
 MIPT language is a study project written in C, where are used some interesting algorithms. Project imitates work of a real compiler of a real programming language. Project consists of three big blocks: frontend, middleend and backend. MIPT language consists of my own keywords, so it in some way characterizes studing at MIPT.
 
-> [!NOTE]<br>
+> [!NOTE]
 > In this projects are used my own written libraries like:
 > * own Stack lib
 > * virtual processor CPU
@@ -12,7 +12,8 @@ MIPT language is a study project written in C, where are used some interesting a
 ## Frontend
 This is a first step of processing code of our language. It consists of lexical analysis part and recursive descent parsing tree constructor. 
 ### Lexical analisys
-**pictures**<br>
+
+![Screenshot from 2023-08-31 12-02-29](https://github.com/2APetrin/MIPT_language/assets/75694757/cbd146a3-4d1f-461c-9404-57efea383638)
 
 ### Language EBNF grammar description
 
@@ -169,13 +170,15 @@ die
 
 ### Recursive descent parsing and base tree
 Recursive descent parser makes AST tree with it's standart from code tokens like this<br>
-**pictures**<br>
+![tree_dump0](https://github.com/2APetrin/MIPT_language/assets/75694757/6064ff21-8e9f-4222-b4d5-5cdad28d1521)
 
 ## Middleend
-Midlleend gets AST tree and simplifies it for code optimization. Then it makes temporary file with virtual CPU assembly code. (My CPU project)
+Midlleend gets AST tree and simplifies it for code optimization. Then it makes temporary file with virtual CPU assembly code. (My CPU project)<br>
+![tree_dump101](https://github.com/2APetrin/MIPT_language/assets/75694757/4a177953-a1fd-464b-b2fb-7ec2928a9298)
 
 ## Backend
-Backend is responsible for bytecode generration for my virtual CPU. Backend gets asm code from midleend and generates codes for CPU and then CPU executes them.
+Backend is responsible for bytecode generration for my virtual CPU. Backend gets asm code from midleend and generates codes for CPU and then CPU executes them.<br>
+![image](https://github.com/2APetrin/MIPT_language/assets/75694757/96aaf041-4384-4da7-9c05-7452b3647281)
 
 ## Build
 ```
