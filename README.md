@@ -12,18 +12,19 @@ MIPT language is a study project written in C, where are used some interesting a
 ## Frontend
 This is a first step of processing code of our language. It consists of lexical analysis part and recursive descent parsing tree constructor. 
 ### Lexical analisys
-**pictures**
+**pictures**<br>
 ###Language EBNF grammar description
-* Programm always starts by defining user functions if needed and start (main) function
+1) Programm always starts by defining user functions if needed and start (main) function<br>
 **defining:**
 ```
-skill_to \*func_name\* [ \*func param 1\* | \*func param 2\* | ... ]
+skill_to func_name [ func param 1 | func param 2 | ... ]
 enter_mipt
-    ***code***
+    code
 get_sent_down
 ```
-if there are no params just leave `[ ]`
-In my language you should write all keywords separated from other. **Example:**
+* if there are no params just leave `[ ]`
+* In my language you should write all keywords separated from other.<br>
+**Example:**
 ```
 [ ]
 ( 1 + 2 * 3 )
@@ -40,4 +41,15 @@ get_sent_down
 die
 ```
 
-
+2) In every function are placed **operators**
+* If operator (with else or without)
+* Variable operators (initialization or assignment)
+* Loop operator
+* Base functions:
+	- print and scan
+	- decrease operator (--)
+	- return
+	- square root operator
+	- operators for quadratic equation
+		- all nubers print
+		- no roots print
