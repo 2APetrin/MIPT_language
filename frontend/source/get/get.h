@@ -136,6 +136,13 @@ token_t* get_assignment(text_t* text);
 //! @return root of while loop tree or a nullptr if error happened
 token_t* get_loop(text_t* text);
 
+//! @brief gets needed tree based on our EBNF grammar
+//!
+//! @param [out] text pointer to text_t struct - main structure of frontend
+//!
+//! @return root of needed function tree or a nullptr if error happened
+token_t* get_func(text_t* text);
+
 //! @brief gets decrease for 1 operator tree based on our EBNF grammar
 //!
 //! @param [out] text pointer to text_t struct - main structure of frontend

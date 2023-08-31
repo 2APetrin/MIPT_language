@@ -14,7 +14,7 @@ int create_tree_of_tokens(text_t* text)
 
     if (!text->status) tree_print_dump(text->tree_root);
 
-    printf("Local codetree is constructed\n");
+    printf("-------------------------------------------------\nLocal codetree is constructed\n");
 
     return 0;
 }
@@ -77,7 +77,7 @@ token_type get_tok_type(const char* word)
     if (!strcmp(word, "("))               return TYPE_EXPR_O_BR;
     if (!strcmp(word, ")"))               return TYPE_EXPR_C_BR;
 
-    if (!strcmp(word, "pereeb"))          return TYPE_LOOP_FIRST;
+    if (!strcmp(word, "skat"))            return TYPE_LOOP_FIRST;
     if (!strcmp(word, "solve_nulevka"))   return TYPE_DECREASE;
     if (!strcmp(word, "skill_to"))        return TYPE_FUNC_INIT;
 
@@ -206,6 +206,7 @@ int write_tree_preorder(text_t* text)
 
 int write_subtree_preorder(token_t* node, FILE* stream)
 {
+    ASSERT(stream);
     if (!node) return 0;
 
     unsigned type = node->type;

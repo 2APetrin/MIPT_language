@@ -1,0 +1,15 @@
+born
+enter_mipt
+    invent x 0$
+    take_note x$
+
+    skat x nulevok_untill_they_run_out
+    enter_mipt
+        whisper_to_the_professor x in_the_ear$
+        solve_nulevka x$
+    get_sent_down
+
+    whisper_to_the_professor 444 in_the_ear$
+
+get_sent_down
+die

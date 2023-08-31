@@ -99,7 +99,7 @@ int write_exe_array(asm_t* assembly, FILE* out_stream)
     fwrite(OUT_BUFF, sizeof(elem_t), OUT_BUFF_LEN, out_stream);
     fclose(out_stream);
     printf("ASM code is written\n");
-    printf("Compilation OK\n");
+    printf("Compilation OK\n-------------------------------------------------\n");
 
 
     return 0;

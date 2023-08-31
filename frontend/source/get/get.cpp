@@ -115,21 +115,36 @@ token_t* get_operator(text_t* text)
 
     if (type == TYPE_VAR_INIT || type == TYPE_VAR) return get_variable_op(text);
 
-    if (type == TYPE_PRINT)                        return get_print(text);
-
     if (type == TYPE_LOOP_FIRST)                   return get_loop(text);
 
-    if (type == TYPE_DECREASE)                     return get_decrease(text);
+    if (type == TYPE_DECREASE || type == TYPE_RETURN || type == TYPE_SCANF ||
+    type == TYPE_SQRT || type == TYPE_ALLNUM || type == TYPE_NROOTS ||
+    type == TYPE_PRINT)
+        return get_func(text);
 
-    if (type == TYPE_RETURN)                       return get_return(text);
+    return nullptr;
+}
 
-    if (type == TYPE_SCANF)                        return get_scanf(text);
+token_t* get_func(text_t* text)
+{
+    ASSERT(text);
+    ASSERT(TOKEN_BUFF);
 
-    if (type == TYPE_SQRT)                         return get_sqrt(text);
+    token_type type = TOKEN_BUFF[POS]->type;
 
-    if (type == TYPE_ALLNUM)                       return get_allnum(text);
+    if (type == TYPE_PRINT)    return get_print(text);
 
-    if (type == TYPE_NROOTS)                       return get_nroots(text);
+    if (type == TYPE_DECREASE) return get_decrease(text);
+
+    if (type == TYPE_RETURN)   return get_return(text);
+
+    if (type == TYPE_SCANF)    return get_scanf(text);
+
+    if (type == TYPE_SQRT)     return get_sqrt(text);
+
+    if (type == TYPE_ALLNUM)   return get_allnum(text);
+
+    if (type == TYPE_NROOTS)   return get_nroots(text);
 
     return nullptr;
 }

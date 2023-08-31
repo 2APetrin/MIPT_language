@@ -17,7 +17,7 @@ int main(int argc, char** argv)
     system("./obj/middle\n");
     system("./obj/back\n");
 
-    system("rm -rf temp/*");
+    //system("rm -rf temp/*");
 
     return 0;
 }
