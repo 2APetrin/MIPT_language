@@ -13,7 +13,10 @@ MIPT language is a study project written in C, where are used some interesting a
 This is a first step of processing code of our language. It consists of lexical analysis part and recursive descent parsing tree constructor. 
 ### Lexical analisys
 
-![Screenshot from 2023-08-31 12-02-29](https://github.com/2APetrin/MIPT_language/assets/75694757/cbd146a3-4d1f-461c-9404-57efea383638)
+![Screenshot from 2023-08-31 12-02-29](https://github.com/2APetrin/MIPT_language/assets/75694757/cbd146a3-4d1f-461c-9404-57efea383638)<br><br>
+Frontend block makes lexical tokens from our text of programm. It looks like this<br>
+![Screenshot from 2023-09-01 17-44-36](https://github.com/2APetrin/MIPT_language/assets/75694757/95c05791-5662-4a3a-8bfa-e0477e40f4c3)<br>
+Then frontend runs recursive descent parser making codetree based on EBNF grammar.
 
 ### Language EBNF grammar description
 
@@ -54,14 +57,12 @@ enter_mipt
     *code*
 get_sent_down
 ```
-```
 `==` is `<->`<br>
 `>`  is `>`<br>
 `<`  is `<`<br>
 `>=` is `->`<br>
 `<=` is `->`<br>
 `!=` is `<!>`<br>
-```
 
 **Else:**
 ```
